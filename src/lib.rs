@@ -5,6 +5,7 @@ extern crate libc;
 extern crate failure;
 extern crate image;
 
+/*
 pub use bindings::{OpenSlideT,
                    detect_vendor,
                    open,
@@ -19,9 +20,11 @@ pub use bindings::{OpenSlideT,
                    get_property_names,
                    get_property_value,
 };
+*/
 
-pub use convenience::{WordRepresentation,
-                      decode_buffer};
+pub use convenience::{OpenSlide,
+};
 
-mod bindings;
+pub mod bindings;
+pub mod utils;
 mod convenience;

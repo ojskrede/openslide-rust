@@ -1,8 +1,9 @@
-//! This module contains the bindings of the openslide library and its rust wrappers. The api of
-//! the wrappers should be consistant with the C API of OpenSlide
-//! `https://openslide.org/api/openslide_8h.html`
+//! This module contains the bindings of the openslide library and its rust wrappers.
 //!
-//! For a more rust convenient api, see the convenience module
+//! The api of the wrappers should be consistent with the C API of OpenSlide
+//! `https://openslide.org/api/openslide_8h.html`.
+//!
+//! For a more rust convenient api, use the OpenSlide struct.
 //!
 
 use libc;
@@ -19,51 +20,75 @@ extern {
     // Basic usage
     // ---------------
 
-    fn openslide_detect_vendor(filename: *const libc::c_char) -> *const libc::c_char;
+    fn openslide_detect_vendor(
+        filename: *const libc::c_char
+    ) -> *const libc::c_char;
 
-    fn openslide_open(filename: *const libc::c_char) -> *const OpenSlideT;
+    fn openslide_open(
+        filename: *const libc::c_char
+    ) -> *const OpenSlideT;
 
-    fn openslide_close(osr: *const OpenSlideT) -> libc::c_void;
+    fn openslide_close(
+        osr: *const OpenSlideT
+    ) -> libc::c_void;
 
-    fn openslide_get_level_count(osr: *const OpenSlideT) -> libc::int32_t;
+    fn openslide_get_level_count(
+        osr: *const OpenSlideT
+    ) -> libc::int32_t;
 
-    fn openslide_get_level0_dimensions(osr: *const OpenSlideT,
-                                       w: *mut libc::int64_t,
-                                       h: *mut libc::int64_t) -> libc::c_void;
+    fn openslide_get_level0_dimensions(
+        osr: *const OpenSlideT,
+        w: *mut libc::int64_t,
+        h: *mut libc::int64_t
+    ) -> libc::c_void;
 
-    fn openslide_get_level_dimensions(osr: *const OpenSlideT,
-                                      level: libc::int32_t,
-                                      w: *mut libc::int64_t,
-                                      h: *mut libc::int64_t) -> libc::c_void;
+    fn openslide_get_level_dimensions(
+        osr: *const OpenSlideT,
+        level: libc::int32_t,
+        w: *mut libc::int64_t,
+        h: *mut libc::int64_t
+    ) -> libc::c_void;
 
-    fn openslide_get_level_downsample(osr: *const OpenSlideT,
-                                      level: libc::int32_t) ->  libc::c_double;
+    fn openslide_get_level_downsample(
+        osr: *const OpenSlideT,
+        level: libc::int32_t
+    ) -> libc::c_double;
 
-    fn openslide_get_best_level_for_downsample(slide: *const OpenSlideT,
-                                               downsample_factor: libc::c_double) -> libc::int32_t;
+    fn openslide_get_best_level_for_downsample(
+        slide: *const OpenSlideT,
+        downsample_factor: libc::c_double
+    ) -> libc::int32_t;
 
-    fn openslide_read_region(osr: *const OpenSlideT,
-                             dest: *mut libc::uint32_t,
-                             x: libc::int64_t,
-                             y: libc::int64_t,
-                             level: libc::int32_t,
-                             w: libc::int64_t,
-                             h: libc::int64_t) -> libc::c_void;
+    fn openslide_read_region(
+        osr: *const OpenSlideT,
+        dest: *mut libc::uint32_t,
+        x: libc::int64_t,
+        y: libc::int64_t,
+        level: libc::int32_t,
+        w: libc::int64_t,
+        h: libc::int64_t
+    ) -> libc::c_void;
 
     // ---------------
     // Error handling
     // ---------------
 
-    fn openslide_get_error(osr: *const OpenSlideT) -> *const libc::c_char;
+    fn openslide_get_error(
+        osr: *const OpenSlideT
+    ) -> *const libc::c_char;
 
     // ---------------
     // Properties
     // ---------------
 
-    fn openslide_get_property_names(osr: *const OpenSlideT) -> *const *const libc::c_char;
+    fn openslide_get_property_names(
+        osr: *const OpenSlideT
+    ) -> *const *const libc::c_char;
 
-    fn openslide_get_property_value(osr: *const OpenSlideT,
-                                    name: *const libc::c_char) -> *const libc::c_char;
+    fn openslide_get_property_value(
+        osr: *const OpenSlideT,
+        name: *const libc::c_char
+    ) -> *const libc::c_char;
 }
 
 
@@ -72,8 +97,9 @@ extern {
 // ---------------
 
 /// Quickly determine whether a whole slide image is recognized.
-pub fn detect_vendor(filename: &str) -> Result<String, Error> {
-    // TODO: Check invalid
+pub fn detect_vendor(
+    filename: &str
+) -> Result<String, Error> {
     let c_filename = ffi::CString::new(filename)?;
     let vendor = unsafe {
         let c_vendor = openslide_detect_vendor(c_filename.as_ptr());
@@ -83,7 +109,9 @@ pub fn detect_vendor(filename: &str) -> Result<String, Error> {
 }
 
 /// Open a whole slide image.
-pub fn open(filename: &str) -> Result<*const OpenSlideT, Error> {
+pub fn open(
+    filename: &str
+) -> Result<*const OpenSlideT, Error> {
     let c_filename = ffi::CString::new(filename)?;
     let slide = unsafe {
         openslide_open(c_filename.as_ptr())
@@ -92,15 +120,18 @@ pub fn open(filename: &str) -> Result<*const OpenSlideT, Error> {
 }
 
 /// Close an OpenSlide object.
-pub fn close(osr: *const OpenSlideT) -> Result<(), Error> {
+pub fn close(
+    osr: *const OpenSlideT
+) {
     unsafe {
         openslide_close(osr);
     }
-    Ok(())
 }
 
 /// Get the number of levels in the whole slide image.
-pub fn get_level_count(osr: *const OpenSlideT) -> Result<i32, Error> {
+pub fn get_level_count(
+    osr: *const OpenSlideT
+) -> Result<i32, Error> {
     let num_levels = unsafe {
         openslide_get_level_count(osr)
     };
@@ -108,7 +139,9 @@ pub fn get_level_count(osr: *const OpenSlideT) -> Result<i32, Error> {
 }
 
 /// Get the dimensions of level 0 (the largest level).
-pub fn get_level0_dimensions(osr: *const OpenSlideT) -> Result<(i64, i64), Error> {
+pub fn get_level0_dimensions(
+    osr: *const OpenSlideT
+) -> Result<(i64, i64), Error> {
     let mut width: libc::int64_t = 0;
     let mut height: libc::int64_t = 0;
     unsafe {
@@ -118,7 +151,10 @@ pub fn get_level0_dimensions(osr: *const OpenSlideT) -> Result<(i64, i64), Error
 }
 
 /// Get the dimensions of a level.
-pub fn get_level_dimensions(osr: *const OpenSlideT, level: i32) -> Result<(i64, i64), Error> {
+pub fn get_level_dimensions(
+    osr: *const OpenSlideT,
+    level: i32
+) -> Result<(i64, i64), Error> {
     let mut width: libc::int64_t = 0;
     let mut height: libc::int64_t = 0;
     unsafe {
@@ -128,7 +164,10 @@ pub fn get_level_dimensions(osr: *const OpenSlideT, level: i32) -> Result<(i64, 
 }
 
 /// Get the downsampling factor of a given level.
-pub fn get_level_downsample(osr: *const OpenSlideT, level: i32) -> Result<f64, Error> {
+pub fn get_level_downsample(
+    osr: *const OpenSlideT,
+    level: i32
+) -> Result<f64, Error> {
     let downsampling_factor = unsafe {
         openslide_get_level_downsample(osr, level)
     };
@@ -136,7 +175,10 @@ pub fn get_level_downsample(osr: *const OpenSlideT, level: i32) -> Result<f64, E
 }
 
 /// Get the best level to use for displaying the given downsample.
-pub fn get_best_level_for_downsample(osr: *const OpenSlideT, downsample: f64) -> Result<i32, Error> {
+pub fn get_best_level_for_downsample(
+    osr: *const OpenSlideT,
+    downsample: f64
+) -> Result<i32, Error> {
     let level = unsafe {
         openslide_get_best_level_for_downsample(osr, downsample)
     };
@@ -144,12 +186,14 @@ pub fn get_best_level_for_downsample(osr: *const OpenSlideT, downsample: f64) ->
 }
 
 /// Copy pre-multiplied ARGB data from a whole slide image.
-pub fn read_region(osr: *const OpenSlideT,
-                   x: i64,
-                   y: i64,
-                   level: i32,
-                   w: i64,
-                   h: i64) -> Result<Vec<u32>, Error> {
+pub fn read_region(
+    osr: *const OpenSlideT,
+    x: i64,
+    y: i64,
+    level: i32,
+    w: i64,
+    h: i64
+) -> Result<Vec<u32>, Error> {
     let mut buffer: Vec<libc::uint32_t> = Vec::with_capacity((h * w) as usize);
     unsafe {
         let p_buffer = buffer.as_mut_ptr();
@@ -164,14 +208,18 @@ pub fn read_region(osr: *const OpenSlideT,
 // Error handling
 // ---------------
 
+/* FIXME Keep commented as long as it is not working. Gets segmentation fault core dumped
 /// Get the current error string.
-pub fn get_error(osr: *const OpenSlideT) -> Result<String, Error> {
+pub fn get_error(
+    osr: *const OpenSlideT
+) -> Result<String, Error> {
     let msg = unsafe {
         let c_msg = openslide_get_error(osr);
         ffi::CStr::from_ptr(c_msg).to_string_lossy().into_owned()
     };
     Ok(msg)
 }
+*/
 
 
 // ---------------
@@ -179,7 +227,9 @@ pub fn get_error(osr: *const OpenSlideT) -> Result<String, Error> {
 // ---------------
 
 /// Get the NULL-terminated array of property names.
-pub fn get_property_names(osr: *const OpenSlideT) -> Result<Vec<String>, Error> {
+pub fn get_property_names(
+    osr: *const OpenSlideT
+) -> Result<Vec<String>, Error> {
     let string_values = unsafe {
         let null_terminated_array_ptr = openslide_get_property_names(osr);
         let mut counter = 0;
@@ -201,7 +251,10 @@ pub fn get_property_names(osr: *const OpenSlideT) -> Result<Vec<String>, Error> 
 }
 
 /// Get the value of a single property.
-pub fn get_property_value(osr: *const OpenSlideT, name: &str) -> Result<String, Error> {
+pub fn get_property_value(
+    osr: *const OpenSlideT,
+    name: &str
+) -> Result<String, Error> {
     let c_name = ffi::CString::new(name)?;
     let value = unsafe {
         let c_value = openslide_get_property_value(osr, c_name.as_ptr());

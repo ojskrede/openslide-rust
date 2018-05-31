@@ -13,6 +13,7 @@ use ::{utils, bindings};
 ///
 /// This wraps the bindings found in the bindings module, but has a more (in my opinion) convenient
 /// API for rust. It also contains some other convenience methods.
+#[derive(Clone)]
 pub struct OpenSlide {
     osr: *const bindings::OpenSlideT,
 }

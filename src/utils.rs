@@ -4,11 +4,16 @@ use failure::{Error};
 
 /// The different ways the u8 color values are encoded into a u32 value.
 ///
-/// BigEndian => [alpha, red, green, blue]
-/// LittleEndian => [blue, green, red, alpha]
-///
+/// A successfull reading from OpenSlide's `read_region()` will result in a buffer of `u32` with
+/// `height * width` elements, where `height` and `width` is the shape (in pixels) of the read
+/// region. This `u32` value consist of four `u8` values which are the red, green, blue, and alpha
+/// value of a certain pixel. This enum determines in which order to arange these channels within
+/// one element.
+#[derive(Clone, Debug)]
 pub enum WordRepresentation {
+    /// From most significant bit to least significant bit: `[alpha, red, green, blue]`
     BigEndian,
+    /// From most significant bit to least significant bit: `[blue, green, red, alpha]`
     LittleEndian,
 }
 

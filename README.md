@@ -63,7 +63,7 @@ naming and documentation. This serves at least two purposes:
 2: If you are not happy with my convenience wrappers, you could use this raw api to create your
 own.
 
-```
+```rust
 //! Example using the raw binding api
 
 extern crate failure;
@@ -93,7 +93,7 @@ The convenience interface wraps the native interface and provides a more rust-li
 wrappings will enforce correct use via the type system and other checks. There is also no need to
 explicitly close an open slide, as the `OpenSlide` struct implements the `Drop` trait.
 
-```
+```rust
 //! Example using the convenience binding api
 
 extern crate failure;

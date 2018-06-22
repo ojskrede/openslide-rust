@@ -1,6 +1,6 @@
 # OpenSlide Rust
 
-Rust bindings to OpenSlide ([http://openslide.org/](http://openslide.org/)).
+Rust bindings to OpenSlide ([https://openslide.org/](https://openslide.org/)).
 
 This work has no affiliations with the official OpenSlide project.
 

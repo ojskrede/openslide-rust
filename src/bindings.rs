@@ -1,4 +1,4 @@
-//! This module contains the bindings of the openslide library and its rust wrappers.
+//! This module contains the bindings of the OpenSlide library and its rust wrappers.
 //!
 //! The api of the wrappers should be consistent with the C API of OpenSlide
 //! `https://openslide.org/api/openslide_8h.html`.

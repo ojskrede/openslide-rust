@@ -1,4 +1,4 @@
-//! This module contains functions that often are more convenient to use than the raw openslide
+//! This module contains functions that often are more convenient to use than the raw OpenSlide
 //! wrappers
 //!
 
@@ -9,7 +9,7 @@ use image::{RgbaImage};
 
 use ::{utils, bindings};
 
-/// A convenient openslide object with the ordinary openslide functions as methods
+/// A convenient OpenSlide object with the ordinary OpenSlide functions as methods
 ///
 /// This wraps the bindings found in the bindings module, but has a more (in my opinion) convenient
 /// API for rust. It also contains some other convenience methods.
@@ -58,7 +58,7 @@ impl OpenSlide {
                                  OpenSlide returns -1 if an error occured. \
                                  See OpenSlide C API documentation.", num_levels)))
         } else if num_levels == -1 {
-            Err(err_msg("Error: Number of levels is -1, this is a known error from openslide. \
+            Err(err_msg("Error: Number of levels is -1, this is a known error from OpenSlide. \
                          OpenSlide returns -1 if an error occured. \
                          See OpenSlide C API documentation."))
         } else if num_levels >= 0 && num_levels < 256 {
@@ -84,7 +84,7 @@ impl OpenSlide {
                                         OpenSlide returns -1 if an error occured. \
                                         See OpenSlide C API documentation.", width)))
         } else if width == -1 {
-            return Err(err_msg("Error: Width is -1, this is a known error from openslide. \
+            return Err(err_msg("Error: Width is -1, this is a known error from OpenSlide. \
                                 OpenSlide returns -1 if an error occured. \
                                 See OpenSlide C API documentation."))
         }
@@ -94,7 +94,7 @@ impl OpenSlide {
                                         OpenSlide returns -1 if an error occured. \
                                         See OpenSlide C API documentation.", width)))
         } else if height == -1 {
-            return Err(err_msg("Error: Height is -1, this is a known error from openslide. \
+            return Err(err_msg("Error: Height is -1, this is a known error from OpenSlide. \
                                 OpenSlide returns -1 if an error occured. \
                                 See OpenSlide C API documentation."))
         }

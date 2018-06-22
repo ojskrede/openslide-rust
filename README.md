@@ -17,7 +17,7 @@ I cannot guarantee that it works for other versions.
 
 ## Building OpenSlide
 
-Download the Openslide `3.4.1` from
+Download the OpenSlide `3.4.1` from
 [https://openslide.org/download/](https://openslide.org/download/)
 to some location (here, `DOWNLOAD_DIR`)
 

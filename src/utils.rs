@@ -1,5 +1,10 @@
+//! Misc utility definitions
+
+use std::fmt::{Display, Debug};
+
+use num::{ToPrimitive, Unsigned, Integer};
 use image::{Rgba, RgbaImage};
-use failure::{Error};
+use failure::{err_msg, Error};
 
 
 /// The different ways the u8 color values are encoded into a u32 value.
@@ -19,19 +24,23 @@ pub enum WordRepresentation {
 
 /// This function takes a buffer, as the one obtained from openslide::read_region, and decodes into
 /// an Rgba image buffer.
-pub fn decode_buffer(buffer: &Vec<u32>,
-                     height: u32,
-                     width: u32,
-                     word_representation: WordRepresentation) -> Result<RgbaImage, Error> {
+pub fn decode_buffer<T: Unsigned + Integer + ToPrimitive + Debug + Display + Clone + Copy>(
+    buffer: &Vec<u32>,
+    height: T,
+    width: T,
+    word_representation: WordRepresentation
+) -> Result<RgbaImage, Error> {
     let (a_pos, r_pos, g_pos, b_pos) = match word_representation {
         WordRepresentation::BigEndian => (0, 1, 2, 3),
         WordRepresentation::LittleEndian => (3, 2, 1, 0),
     };
 
-    let mut rgba_image = RgbaImage::new(width as u32, height as u32);
+    let mut rgba_image = RgbaImage::new(
+        width.to_u32().ok_or(err_msg("Conversion to primitive error"))?,
+        height.to_u32().ok_or(err_msg("Conversion to primitive error"))?);
 
     for (col, row, pixel) in rgba_image.enumerate_pixels_mut() {
-        let curr_pos = row * width + col;
+        let curr_pos = row * width.to_u32().ok_or(err_msg("Conversion to primitive error"))? + col;
         let values = buffer[curr_pos as usize];
         // TODO: Iterate over chars() instead (?)
         let bit_repr = format!("{:b}", values);

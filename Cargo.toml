@@ -7,6 +7,7 @@ authors = ["Ole-Johan Skrede <ojskrede@gmail.com>"]
 libc = "0.2"
 failure = "0.1"
 image = "0.19"
+num = "0.2"
 
 [build-dependencies]
 cc = "1.0"

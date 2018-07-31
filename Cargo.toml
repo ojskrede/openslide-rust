@@ -3,6 +3,13 @@ name = "openslide"
 version = "0.1.0"
 authors = ["Ole-Johan Skrede <ojskrede@gmail.com>"]
 
+description = "Rust bindings to the OpenSlide C library"
+repository = "https://github.com/ojskrede/openslide-rust"
+readme = "README.md"
+keywords = ["openslide", "histopathology", "microscopy"]
+categories = ["science"]
+license = "MIT/Apache-2.0"
+
 [dependencies]
 libc = "0.2"
 failure = "0.1"

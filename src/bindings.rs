@@ -73,9 +73,9 @@ extern {
     // Error handling
     // ---------------
 
-    fn openslide_get_error(
-        osr: *const OpenSlideT
-    ) -> *const libc::c_char;
+    // fn openslide_get_error(
+    //     osr: *const OpenSlideT
+    // ) -> *const libc::c_char;
 
     // ---------------
     // Properties

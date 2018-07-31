@@ -14,11 +14,11 @@ fn basic_usage(
 
     println!("Num levels: {}", os.get_level_count()?);
     println!("Dimensions at level 0: {:?}", os.get_level0_dimensions()?);
-    println!("Dimensions at level 0: {:?}", os.get_level_dimensions(0)?);
-    println!("Downsample factor at level 0: {}", os.get_level_downsample(0)?);
+    println!("Dimensions at level 0: {:?}", os.get_level_dimensions(0u8)?);
+    println!("Downsample factor at level 0: {}", os.get_level_downsample(0u8)?);
     println!("Best level for downsampling factor 4.5: {}", os.get_best_level_for_downsample(4.5)?);
 
-    let im = os.read_region(1500, 1000, 0, 512, 512)?;
+    let im = os.read_region(1500u32, 1000u32, 0u32, 512u32, 512u32)?;
     im.save("/tmp/wsi_region_2.png")?;
 
     for (key, val) in os.get_properties()? {

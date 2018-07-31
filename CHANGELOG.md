@@ -12,7 +12,7 @@ The changelog format is based on [this template](http://keepachangelog.com/en/1.
   - `Fixed` for any bug fixes.
   - `Security` to invite users to upgrade in case of vulnerabilities.
 
-## [0.2.0] - 2018.06.22, not finished
+## Unreleased
 ### Changed
   - Substituted primitive types with generic floats and integers.
 

@@ -108,7 +108,7 @@ impl OpenSlide {
     ///
     /// This method returns the (width, height) number of pixels of the whole slide image at the
     /// specified level. Returns an error if the level is invalid
-    pub fn get_level_dimensions<T: Unsigned + Integer + ToPrimitive + Debug + Display + Clone + Copy>(
+    pub fn get_level_dimensions<T: Integer + ToPrimitive + Debug + Display + Clone + Copy>(
         &self,
         level: T,
     ) -> Result<(u64, u64), Error> {
@@ -145,7 +145,7 @@ impl OpenSlide {
     }
 
     /// Get the downsampling factor of a given level.
-    pub fn get_level_downsample<T: Unsigned + Integer + ToPrimitive + Debug + Display + Clone + Copy>(
+    pub fn get_level_downsample<T: Integer + Unsigned + ToPrimitive + Debug + Display + Clone + Copy>(
         &self,
         level: T,
     ) -> Result<f64, Error> {
@@ -204,7 +204,7 @@ impl OpenSlide {
     ///     level: At which level to grab the region from
     ///     height: Height in pixels of the outputted region
     ///     width: Width in pixels of the outputted region
-    pub fn read_region<T: Unsigned + Integer + ToPrimitive + Debug + Display + Clone + Copy>(
+    pub fn read_region<T: Integer + Unsigned + ToPrimitive + Debug + Display + Clone + Copy>(
         &self,
         top_left_lvl0_row: T,
         top_left_lvl0_col: T,
@@ -212,6 +212,7 @@ impl OpenSlide {
         height: T,
         width: T,
     ) -> Result<RgbaImage, Error> {
+
         let buffer = bindings::read_region(self.osr,
                                            top_left_lvl0_col.to_i64().ok_or(err_msg("Conversion to primitive error"))?,
                                            top_left_lvl0_row.to_i64().ok_or(err_msg("Conversion to primitive error"))?,
@@ -236,6 +237,4 @@ impl OpenSlide {
         }
         Ok(properties)
     }
-
-
 }

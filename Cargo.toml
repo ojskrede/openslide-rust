@@ -16,5 +16,8 @@ failure = "0.1"
 image = "0.19"
 num = "0.2"
 
+[dev-dependencies]
+float-cmp = "0.4"
+
 [build-dependencies]
 cc = "1.0"

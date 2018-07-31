@@ -13,6 +13,8 @@ The changelog format is based on [this template](http://keepachangelog.com/en/1.
   - `Security` to invite users to upgrade in case of vulnerabilities.
 
 ## Unreleased
+### Added
+  - Integration tests
 ### Changed
   - Substituted primitive types with generic floats and integers.
 

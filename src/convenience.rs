@@ -193,6 +193,56 @@ impl OpenSlide {
         }
     }
 
+    /// Return (new_height, new_width) where
+    ///
+    /// new_height = min(height, max_height)
+    /// new_width = min(width, max_width)
+    ///
+    /// and max_{height, width} are computed based on the top left corner coordinates and the
+    /// dimensions of the image.
+    fn get_feasible_dimensions<T: Integer + Unsigned + ToPrimitive + Debug + Display + Clone + Copy>(
+        &self,
+        top_left_lvl0_row: T,
+        top_left_lvl0_col: T,
+        level: T,
+        height: T,
+        width: T,
+    ) -> Result<(u64, u64), Error> {
+        let (max_width, max_height) = self.get_level_dimensions(level)?;
+        let downsample_factor = self.get_level_downsample(level)?;
+
+        let tl_row_this_lvl = top_left_lvl0_row.to_f64().ok_or(err_msg("Conversion to primitive error"))? /
+                              downsample_factor;
+        let tl_col_this_lvl = top_left_lvl0_col.to_f64().ok_or(err_msg("Conversion to primitive error"))? /
+                              downsample_factor;
+
+        let new_height = height.to_u64()
+                               .ok_or(err_msg("conversion to primitive error"))?
+                               .min(max_height - tl_row_this_lvl.round() as u64);
+        let new_width = width.to_u64()
+                             .ok_or(err_msg("Conversion to primitive error"))?
+                             .min(max_width - tl_col_this_lvl.round() as u64);
+
+        if new_height < height.to_u64().ok_or(err_msg("conversion to primitive error"))? {
+            println!("WARNING: Requested region height is changed from {} to {} in order to fit",
+                     height, new_height);
+        }
+        if new_width < width.to_u64().ok_or(err_msg("conversion to primitive error"))? {
+            println!("WARNING: Requested region width is changed from {} to {} in order to fit",
+                     width, new_width);
+        }
+
+        if new_height > max_height {
+            return Err(err_msg(format!("Requested height {} exceeds maximum {}", height, max_height)))
+        }
+
+        if new_width > max_width {
+            return Err(err_msg(format!("Requested width {} exceeds maximum {}", width, max_width)))
+        }
+
+        Ok((new_height, new_width))
+    }
+
     /// Copy pre-multiplied ARGB data from a whole slide image.
     ///
     /// This function reads and decompresses a region of a whole slide image into an RGBA image
@@ -212,6 +262,12 @@ impl OpenSlide {
         height: T,
         width: T,
     ) -> Result<RgbaImage, Error> {
+
+        let (height, width) = self.get_feasible_dimensions(top_left_lvl0_row,
+                                                           top_left_lvl0_col,
+                                                           level,
+                                                           height,
+                                                           width)?;
 
         let buffer = bindings::read_region(self.osr,
                                            top_left_lvl0_col.to_i64().ok_or(err_msg("Conversion to primitive error"))?,

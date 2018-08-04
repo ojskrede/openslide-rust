@@ -12,9 +12,14 @@ The changelog format is based on [this template](http://keepachangelog.com/en/1.
   - `Fixed` for any bug fixes.
   - `Security` to invite users to upgrade in case of vulnerabilities.
 
+## TODO:
+  - Test for native bindings.
+  - Add properties structs.
+
 ## Unreleased
 ### Added
-  - Integration tests
+  - Integration tests for convenience api.
+  - Guards for size and location of read frame based on slide dimensions.
 ### Changed
   - Substituted primitive types with generic floats and integers.
 

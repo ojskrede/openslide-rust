@@ -10,11 +10,20 @@ keywords = ["openslide", "histopathology", "microscopy"]
 categories = ["science"]
 license = "MIT/Apache-2.0"
 
+[[bin]]
+name = "development"
+path = "src/bin/development.rs"
+required-features = ["binaries"]
+
+[features]
+binaries = ["clap"]
+
 [dependencies]
 libc = "0.2"
 failure = "0.1"
 image = "0.19"
 num = "0.2"
+clap = { version = "2.32", optional = true }
 
 [dev-dependencies]
 float-cmp = "0.4"

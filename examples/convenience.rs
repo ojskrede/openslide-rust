@@ -25,6 +25,10 @@ fn basic_usage(
         println!("{0:<40} {1}", key, val);
     }
 
+    println!("{:?}", os.properties.mpp_y());
+    println!("{:?}", os.properties.resolution_unit());
+    println!("{:?}", os.properties.model());
+
     Ok(())
 }
 

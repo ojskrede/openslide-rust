@@ -21,13 +21,16 @@ fn basic_usage(
     let im = os.read_region(1500u32, 1000u32, 0u32, 512u32, 512u32)?;
     im.save("/tmp/wsi_region_2.png")?;
 
+    println!("");
+    println!("");
+    println!("");
     for (key, val) in os.get_properties()? {
         println!("{0:<40} {1}", key, val);
     }
-
-    println!("{:?}", os.properties.mpp_y());
-    println!("{:?}", os.properties.resolution_unit());
-    println!("{:?}", os.properties.model());
+    println!("");
+    println!("");
+    println!("");
+    os.properties.print_available();
 
     Ok(())
 }

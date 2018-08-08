@@ -8,6 +8,8 @@ mod hamamatsu;
 
 use std::collections::HashMap;
 
+use self::openslide::LevelProperties;
+
 /// This struct defines an inferface to the various properties of the various formats.
 ///
 /// These properties are also available as a `HashMap<String, String>` which can be obtained with
@@ -79,16 +81,47 @@ impl Properties {
 
     // Openslide properties (the markdown header is on the method above)
 
+    /// Slide vendor
+    pub fn vendor(&self) -> Option<String> {
+        self.openslide_properties.vendor.clone()
+    }
+
+    /// Quickhash 1
+    pub fn quickhash_1(&self) -> Option<String> {
+        self.openslide_properties.quickhash_1.clone()
+    }
+
     /// Micrometer (microns) per pixel in the x (horisontal (TODO: or vertical)) direction.
     pub fn mpp_x(&self) -> Option<f32> {
         self.openslide_properties.mpp_x
     }
 
     /// Micrometer (microns) per pixel in the y (vertical (TODO: or horisontal)) direction.
-    ///
-    /// # Tiff properties
     pub fn mpp_y(&self) -> Option<f32> {
         self.openslide_properties.mpp_y
+    }
+
+    /// Objective power
+    pub fn objective_power(&self) -> Option<u32> {
+        self.openslide_properties.objective_power
+    }
+
+    /// Comment
+    pub fn comment(&self) -> Option<String> {
+        self.openslide_properties.comment.clone()
+    }
+
+    /// Number of zoom levels
+    pub fn level_count(&self) -> Option<u32> {
+        self.openslide_properties.level_count
+    }
+
+    /// Vector of level-dependent properties. The position in the returned vector corresponds to
+    /// the zoom level.
+    ///
+    /// # Tiff properties
+    pub fn levels(&self) -> Option<Vec<LevelProperties>> {
+        self.openslide_properties.levels.clone()
     }
 
     // Tiff properties (the markdown header is on the method above)
@@ -125,7 +158,109 @@ impl Properties {
     }
 
     /// Resolution unit (e.g. centimeter or inch)
+    ///
+    /// # Aperio properties
     pub fn resolution_unit(&self) -> Option<String> {
         self.tiff_properties.resolution_unit.clone()
+    }
+
+    // Aperio properties (the markdown header is on the method above)
+
+    /// Slide filename
+    pub fn filename(&self) -> Option<String> {
+        self.aperio_properties.filename.clone()
+    }
+
+    /// Slide image id
+    pub fn image_id(&self) -> Option<String> {
+        self.aperio_properties.image_id.clone()
+    }
+
+    /// ScanScope id
+    pub fn scan_scope_id(&self) -> Option<String> {
+        self.aperio_properties.scan_scope_id.clone()
+    }
+
+    /// Date of creation (mm/dd/yy)
+    pub fn date(&self) -> Option<String> {
+        // TODO: Change this to a rust date type
+        self.aperio_properties.date.clone()
+    }
+
+    /// Time of creation (hh:mm:ss)
+    pub fn time(&self) -> Option<String> {
+        // TODO: Change this to a rust time type
+        self.aperio_properties.time.clone()
+    }
+
+    /// User
+    pub fn user(&self) -> Option<String> {
+        self.aperio_properties.user.clone()
+    }
+
+    /// ICC profile
+    pub fn icc_profile(&self) -> Option<String> {
+        self.aperio_properties.icc_profile.clone()
+    }
+
+    /// Parmset
+    pub fn parmset(&self) -> Option<String> {
+        self.aperio_properties.parmset.clone()
+    }
+
+    /// Slide height
+    pub fn original_height(&self) -> Option<u32> {
+        self.aperio_properties.original_height
+    }
+
+    /// Slide width
+    pub fn original_width(&self) -> Option<u32> {
+        self.aperio_properties.original_height
+    }
+
+    pub fn top(&self) -> Option<f32> {
+        self.aperio_properties.top
+    }
+
+    pub fn left(&self) -> Option<f32> {
+        self.aperio_properties.left
+    }
+
+    /// Micrometer per pixel
+    pub fn mpp(&self) -> Option<f32> {
+        self.aperio_properties.mpp
+    }
+
+    /// Line camera skew
+    pub fn line_camera_skew(&self) -> Option<f32> {
+        self.aperio_properties.line_camera_skew
+    }
+
+    /// Line area offset in horizontal(?) direction
+    pub fn line_area_x_offset(&self) -> Option<f32> {
+        self.aperio_properties.line_area_x_offset
+    }
+
+    /// Line area offset in vertical(?) direction
+    pub fn line_area_y_offset(&self) -> Option<f32> {
+        self.aperio_properties.line_area_y_offset
+    }
+
+    /// Focus offset
+    pub fn focus_offset(&self) -> Option<f32> {
+        self.aperio_properties.focus_offset
+    }
+
+    pub fn app_mag(&self) -> Option<u32> {
+        self.aperio_properties.app_mag
+    }
+
+    /// Scan stripe width
+    pub fn stripe_width(&self) -> Option<u32> {
+        self.aperio_properties.stripe_width
+    }
+
+    pub fn filtered(&self) -> Option<u32> {
+        self.aperio_properties.filtered
     }
 }

@@ -9,14 +9,18 @@ use num::Num;
 /// Properties defined for every level
 #[derive(Clone, Debug, Default)]
 pub struct LevelProperties {
-    pub downsample: Option<f32>,
-    pub height: Option<u32>,
-    pub width: Option<u32>,
-    pub tile_height: Option<u32>,
-    pub tile_width: Option<u32>,
+    downsample: Option<f32>,
+    height: Option<u32>,
+    width: Option<u32>,
+    tile_height: Option<u32>,
+    tile_width: Option<u32>,
 }
 
 impl LevelProperties {
+
+    /// Print available properties (key, value) (where the value is not `None`).
+    ///
+    /// # Level properties
     pub fn print_available(&self, level: usize) {
         match self.downsample {
             Some(val) => println!("Level {} downsample factor: {}", level, val),
@@ -38,6 +42,31 @@ impl LevelProperties {
             Some(val) => println!("Level {} tile width: {}", level, val),
             None => {},
         }
+    }
+
+    /// Downsample factor
+    pub fn downsample(&self) -> Option<f32> {
+        self.downsample
+    }
+
+    /// Slide height at this zoom level
+    pub fn height(&self) -> Option<u32> {
+        self.height
+    }
+
+    /// Slide width at this zoom level
+    pub fn width(&self) -> Option<u32> {
+        self.width
+    }
+
+    /// Tile height at this zoom level
+    pub fn tile_height(&self) -> Option<u32> {
+        self.tile_height
+    }
+
+    /// Tile width at this zoom level
+    pub fn tile_width(&self) -> Option<u32> {
+        self.tile_width
     }
 }
 
@@ -180,6 +209,8 @@ impl OpenSlide {
             None => {},
         }
     }
+
+    // TODO: Consider implementing getter functions and make struct variables private.
 }
 
 

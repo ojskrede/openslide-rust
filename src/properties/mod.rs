@@ -4,7 +4,7 @@
 mod openslide;
 mod tiff;
 mod aperio;
-mod hamamatsu;
+//mod hamamatsu;
 
 use std::collections::HashMap;
 
@@ -91,13 +91,15 @@ impl Properties {
         self.openslide_properties.quickhash_1.clone()
     }
 
-    /// Micrometer (microns) per pixel in the x (horisontal (TODO: or vertical)) direction.
+    /// Micrometer (microns) per pixel in the x direction.
     pub fn mpp_x(&self) -> Option<f32> {
+        // TODO: Replace x / y direction with horisontal / vertical in documentation
         self.openslide_properties.mpp_x
     }
 
-    /// Micrometer (microns) per pixel in the y (vertical (TODO: or horisontal)) direction.
+    /// Micrometer (microns) per pixel in the y direction.
     pub fn mpp_y(&self) -> Option<f32> {
+        // TODO: Replace x / y direction with horisontal / vertical in documentation
         self.openslide_properties.mpp_y
     }
 
@@ -147,13 +149,15 @@ impl Properties {
         self.tiff_properties.make.clone()
     }
 
-    /// Resolution in the (TODO: horizontal?) direction
+    /// Resolution in the x direction
     pub fn x_resolution(&self) -> Option<f32> {
+        // TODO: Replace x / y direction with horisontal / vertical in documentation
         self.tiff_properties.x_resolution
     }
 
-    /// Resolution in the (TODO: vertical?) direction
+    /// Resolution in the y direction
     pub fn y_resolution(&self) -> Option<f32> {
+        // TODO: Replace x / y direction with horisontal / vertical in documentation
         self.tiff_properties.y_resolution
     }
 

@@ -15,8 +15,10 @@ The changelog format is based on [this template](http://keepachangelog.com/en/1.
 ## Unreleased
 ### Added
   - Integration tests
+  - Properties convenience module (currently only implemented for some formats)
 ### Changed
   - Substituted primitive types with generic floats and integers.
+  - Bumped image crate to 0.20
 
 ## [0.1.0] - 2018.06.22
 ### Added

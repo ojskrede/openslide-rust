@@ -18,9 +18,9 @@ use openslide::OpenSlide;
 
 fn get_cli<'a>() -> ArgMatches<'a> {
     let matches = App::new("Analyse wsi")
-                          .version("0.1.0")
+                          .version("0.2.0")
                           .author("Ole-Johan Skrede")
-                          .about("Scale, crop, and analyse whole slide images")
+                          .about("Toy program used for development of openslide.")
                           .arg(Arg::with_name("input_file")
                                .short("i")
                                .long("input_file")

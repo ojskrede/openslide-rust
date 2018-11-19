@@ -1,6 +1,6 @@
 [package]
 name = "openslide"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Ole-Johan Skrede <ojskrede@gmail.com>"]
 
 description = "Rust bindings to the OpenSlide C library"

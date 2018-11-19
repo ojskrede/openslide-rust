@@ -14,14 +14,16 @@ The changelog format is based on [this template](http://keepachangelog.com/en/1.
 
 ## TODO:
   - Test for native bindings.
-  - Add properties structs.
+  - Implement properties structs for more formats.
 
-## Unreleased
+## [0.2.0] - 2018.11.19
 ### Added
   - Integration tests for convenience api.
   - Guards for size and location of read frame based on slide dimensions.
+  - Properties structs (currently only implemented for some formats).
 ### Changed
   - Substituted primitive types with generic floats and integers.
+  - Bumped image crate to 0.20.
 
 ## [0.1.0] - 2018.06.22
 ### Added

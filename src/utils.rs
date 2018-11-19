@@ -7,6 +7,61 @@ use image::{Rgba, RgbaImage};
 use failure::{err_msg, Error};
 
 
+/// A list of supported formats
+///
+/// Information gathered from [https://openslide.org/formats/](https://openslide.org/formats/)
+///
+#[derive(Clone, Debug)]
+pub enum Format {
+    /// Single-file pyramidal tiled TIFF, with non-standard metadata and compression.
+    ///
+    /// File extensions:
+    /// 	.svs, .tif
+    Aperio,
+	/// Multi-file JPEG/NGR with proprietary metadata and index file formats, and single-file
+	/// TIFF-like format with proprietary metadata.
+	///
+	/// File extensions:
+    /// 	.vms, .vmu, .ndpi
+    Hamamatsu,
+    /// Single-file pyramidal tiled BigTIFF with non-standard metadata.
+    ///
+    /// File extensions
+    /// 	.scn
+    Leica,
+    /// Multi-file with very complicated proprietary metadata and indexes.
+    ///
+    /// File extensions
+    /// 	.mrxs
+    Mirax,
+    /// Single-file pyramidal tiled TIFF or BigTIFF with non-standard metadata.
+    ///
+    /// File extensions
+    ///     .tiff
+    Phillips,
+    /// SQLite database containing pyramid tiles and metadata.
+    ///
+    /// File extensions
+    ///     .svslide
+    Sakura,
+    /// Single-file pyramidal tiled TIFF, with non-standard metadata and overlaps. Additional files
+    /// contain more metadata and detailed overlap info.
+    ///
+    /// File extensions
+    ///     .tif
+    Trestle,
+    /// Single-file pyramidal tiled BigTIFF, with non-standard metadata and overlaps.
+    ///
+    /// File extensions
+    ///     .bif, .tif
+    Ventana,
+    /// Single-file pyramidal tiled TIFF.
+    ///
+    /// File extensions
+    ///     .tif
+    GenericTiledTiff,
+}
+
 /// The different ways the u8 color values are encoded into a u32 value.
 ///
 /// A successfull reading from OpenSlide's `read_region()` will result in a buffer of `u32` with

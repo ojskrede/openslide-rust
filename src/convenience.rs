@@ -12,7 +12,11 @@ use image::{RgbaImage};
 use num::{Num, ToPrimitive, Unsigned, Integer};
 use num::zero;
 
-use ::{utils, bindings};
+use ::{
+    utils,
+    bindings,
+    properties,
+};
 
 /// A convenient OpenSlide object with the ordinary OpenSlide functions as methods
 ///
@@ -21,6 +25,7 @@ use ::{utils, bindings};
 #[derive(Clone)]
 pub struct OpenSlide {
     osr: *const bindings::OpenSlideT,
+    pub properties: properties::Properties,
 }
 
 impl Drop for OpenSlide {
@@ -47,8 +52,15 @@ impl OpenSlide {
 
         let osr = bindings::open(filename.to_str().ok_or(err_msg("Error: Path to &str"))?)?;
 
+        let mut property_map = HashMap::<String, String>::new();
+        for name in bindings::get_property_names(osr)? {
+            property_map.insert(name.clone(), bindings::get_property_value(osr, &name)?);
+        }
+        let properties = properties::Properties::new(&property_map);
+
         Ok(OpenSlide {
             osr: osr,
+            properties: properties,
         })
     }
 

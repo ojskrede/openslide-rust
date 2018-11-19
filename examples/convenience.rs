@@ -21,9 +21,12 @@ fn basic_usage(
     let im = os.read_region(1500u32, 1000u32, 0u32, 512u32, 512u32)?;
     im.save("/tmp/wsi_region_2.png")?;
 
+    println!("\nPrint properties from the dictionary");
     for (key, val) in os.get_properties()? {
         println!("{0:<40} {1}", key, val);
     }
+    println!("\nPrint available properties using the properties module");
+    os.properties.print_available();
 
     Ok(())
 }

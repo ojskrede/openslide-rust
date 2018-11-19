@@ -21,7 +21,7 @@ binaries = ["clap"]
 [dependencies]
 libc = "0.2"
 failure = "0.1"
-image = "0.19"
+image = "0.20"
 num = "0.2"
 clap = { version = "2.32", optional = true }
 

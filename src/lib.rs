@@ -140,3 +140,4 @@ pub use convenience::{OpenSlide,
 pub mod bindings;
 pub mod utils;
 mod convenience;
+pub mod properties;

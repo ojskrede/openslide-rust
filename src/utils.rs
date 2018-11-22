@@ -4,7 +4,7 @@ use std::fmt::{Display, Debug};
 
 use num::{ToPrimitive, Unsigned, Integer};
 use image::{Rgba, RgbaImage};
-use failure::{err_msg, Error};
+use failure::{err_msg, Error, format_err};
 
 
 /// A list of supported formats
@@ -77,6 +77,16 @@ pub enum WordRepresentation {
     LittleEndian,
 }
 
+fn bit_to_u8(bit_representation: &str, name: &str) -> Result<u8, Error> {
+    match u8::from_str_radix(bit_representation, 2) {
+        Ok(val) => Ok(val),
+        Err(msg) => {
+            eprintln!("Error in parsing bits as u8 for {} channel", name);
+            Err(format_err!("{:?}", msg))
+        },
+    }
+}
+
 /// This function takes a buffer, as the one obtained from openslide::read_region, and decodes into
 /// an Rgba image buffer.
 pub fn decode_buffer<T: Unsigned + Integer + ToPrimitive + Debug + Display + Clone + Copy>(
@@ -104,10 +114,10 @@ pub fn decode_buffer<T: Unsigned + Integer + ToPrimitive + Debug + Display + Clo
         let green_bit_repr = String::from(&bit_repr[(8 * g_pos)..(8 * g_pos + 8)]);
         let blue_bit_repr = String::from(&bit_repr[(8 * b_pos)..(8 * b_pos + 8)]);
 
-        let alpha = u8::from_str_radix(&alpha_bit_repr, 2)?;
-        let mut red = u8::from_str_radix(&red_bit_repr, 2)?;
-        let mut green = u8::from_str_radix(&green_bit_repr, 2)?;
-        let mut blue = u8::from_str_radix(&blue_bit_repr, 2)?;
+        let alpha = bit_to_u8(&alpha_bit_repr, "alpha")?;
+        let mut red = bit_to_u8(&red_bit_repr, "red")?;
+        let mut green = bit_to_u8(&green_bit_repr, "green")?;
+        let mut blue = bit_to_u8(&blue_bit_repr, "blue")?;
 
 
         if alpha != 0 && alpha != 255 {

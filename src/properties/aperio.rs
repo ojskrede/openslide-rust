@@ -11,6 +11,7 @@ pub struct Aperio {
     pub scan_scope_id: Option<String>,
     pub date: Option<String>,
     pub time: Option<String>,
+    pub time_zone: Option<String>,
     pub user: Option<String>,
     pub icc_profile: Option<String>,
     pub parmset: Option<String>,
@@ -26,6 +27,10 @@ pub struct Aperio {
     pub app_mag: Option<u32>,
     pub stripe_width: Option<u32>,
     pub filtered: Option<u32>,
+    pub display_color: Option<u32>,
+    pub exposure_time: Option<u32>,
+    pub exposure_scale: Option<f32>,
+    pub sesson_mode: Option<String>,
 }
 
 impl Aperio {
@@ -36,10 +41,11 @@ impl Aperio {
             "aperio.ScanScope ID" => self.scan_scope_id = Some(String::from(value)),
             "aperio.Date" => self.date = Some(String::from(value)),
             "aperio.Time" => self.time = Some(String::from(value)),
+            "aperio.Time Zone" => self.time_zone = Some(String::from(value)),
             "aperio.User" => self.user = Some(String::from(value)),
             "aperio.ICC Profile" => self.icc_profile = Some(String::from(value)),
             "aperio.Parmset" => self.parmset = Some(String::from(value)),
-            "aperio.Originalheight" => self.original_height = Some(u32::from_str_radix(value, 10).unwrap()),
+            "aperio.OriginalHeight" => self.original_height = Some(u32::from_str_radix(value, 10).unwrap()),
             "aperio.OriginalWidth" => self.original_width = Some(u32::from_str_radix(value, 10).unwrap()),
             "aperio.Top" => self.top = Some(f32::from_str_radix(value, 10).unwrap()),
             "aperio.Left" => self.left = Some(f32::from_str_radix(value, 10).unwrap()),
@@ -51,6 +57,10 @@ impl Aperio {
             "aperio.AppMag" => self.app_mag = Some(u32::from_str_radix(value, 10).unwrap()),
             "aperio.StripeWidth" => self.stripe_width = Some(u32::from_str_radix(value, 10).unwrap()),
             "aperio.Filtered" => self.filtered = Some(u32::from_str_radix(value, 10).unwrap()),
+            "aperio.DisplayColor" => self.display_color = Some(u32::from_str_radix(value, 10).unwrap()),
+            "aperio.Exposure Time" => self.exposure_time = Some(u32::from_str_radix(value, 10).unwrap()),
+            "aperio.Exposure Scale" => self.exposure_scale = Some(f32::from_str_radix(value, 10).unwrap()),
+            "aperio.SessonMode" => self.sesson_mode = Some(String::from(value)),
             _ => println!("Could not parse property name {} and value {}", name, value),
         }
     }

@@ -6,7 +6,7 @@
 //!
 //! This library has been built for
 //!
-//! ```text,no-run
+//! ```text,no_run
 //! OpenSlide 3.4.1
 //! Rust 1.26
 //! ```
@@ -21,7 +21,7 @@
 //!
 //! Build the project somewhere (here, `BUILD_DIR`):
 //!
-//! ```shell,no-run
+//! ```shell,no_run
 //! cd BUILD_DIR
 //! tar xvzf DOWNLOAD_DIR/openslide-3.4.1.tar.gz
 //! cd openslide-3.4.1
@@ -32,7 +32,7 @@
 //!
 //! In the build output, you will see something like this
 //!
-//! ```shell,no-run
+//! ```shell,no_run
 //! Libraries have been installed in:
 //!    /usr/local/lib
 //! ```
@@ -40,7 +40,7 @@
 //! To make the library discoverable, we append it (call it `LIB_DIR`) to the `LD_LIBRARY_PATH`
 //! environment variable
 //!
-//! ```shell,no-run
+//! ```shell,no_run
 //! export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:LIB_DIR
 //! ```
 //!
@@ -61,7 +61,7 @@
 //! 2: If you are not happy with my convenience wrappers, you could use this raw api to create your
 //! own.
 //!
-//! ```rust
+//! ```rust,no_run
 //! //! Example using the raw binding api
 //!
 //! extern crate failure;
@@ -91,7 +91,7 @@
 //! wrappings will enforce correct use via the type system and other checks. There is also no need to
 //! explicitly close an open slide, as the `OpenSlide` struct implements the `Drop` trait.
 //!
-//! ```rust
+//! ```rust,no_run
 //! //! Example using the convenience binding api
 //!
 //! extern crate failure;
@@ -115,6 +115,7 @@
 extern crate libc;
 extern crate failure;
 extern crate image;
+extern crate num;
 
 /*
 pub use bindings::{OpenSlideT,
@@ -139,3 +140,4 @@ pub use convenience::{OpenSlide,
 pub mod bindings;
 pub mod utils;
 mod convenience;
+pub mod properties;

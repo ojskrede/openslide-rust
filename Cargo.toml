@@ -1,6 +1,6 @@
 [package]
 name = "openslide"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Ole-Johan Skrede <ojskrede@gmail.com>"]
 
 description = "Rust bindings to the OpenSlide C library"
@@ -9,10 +9,25 @@ readme = "README.md"
 keywords = ["openslide", "histopathology", "microscopy"]
 categories = ["science"]
 license = "MIT/Apache-2.0"
-
 exclude = ["assets/*"]
+
+[[bin]]
+name = "development"
+path = "src/bin/development.rs"
+required-features = ["binaries"]
+
+[features]
+binaries = ["clap"]
 
 [dependencies]
 libc = "0.2"
 failure = "0.1"
-image = "0.19"
+image = "0.20"
+num = "0.2"
+clap = { version = "2.32", optional = true }
+
+[dev-dependencies]
+float-cmp = "0.4"
+
+[build-dependencies]
+cc = "1.0"

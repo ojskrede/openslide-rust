@@ -4,10 +4,19 @@
 
 use std::path::Path;
 use std::collections::HashMap;
+use std::fmt::{Display, Debug};
+use std::cmp::PartialOrd;
+
 use failure::{err_msg, Error};
 use image::{RgbaImage};
+use num::{Num, ToPrimitive, Unsigned, Integer};
+use num::zero;
 
-use ::{utils, bindings};
+use ::{
+    utils,
+    bindings,
+    properties,
+};
 
 /// A convenient OpenSlide object with the ordinary OpenSlide functions as methods
 ///
@@ -16,6 +25,7 @@ use ::{utils, bindings};
 #[derive(Clone)]
 pub struct OpenSlide {
     osr: *const bindings::OpenSlideT,
+    pub properties: properties::Properties,
 }
 
 impl Drop for OpenSlide {
@@ -42,15 +52,22 @@ impl OpenSlide {
 
         let osr = bindings::open(filename.to_str().ok_or(err_msg("Error: Path to &str"))?)?;
 
+        let mut property_map = HashMap::<String, String>::new();
+        for name in bindings::get_property_names(osr)? {
+            property_map.insert(name.clone(), bindings::get_property_value(osr, &name)?);
+        }
+        let properties = properties::Properties::new(&property_map);
+
         Ok(OpenSlide {
             osr: osr,
+            properties: properties,
         })
     }
 
     /// Get the number of levels in the whole slide image.
     pub fn get_level_count(
         &self
-    ) -> Result<u8, Error> {
+    ) -> Result<u32, Error> {
         let num_levels = bindings::get_level_count(self.osr)?;
 
         if num_levels < -1 {
@@ -61,11 +78,8 @@ impl OpenSlide {
             Err(err_msg("Error: Number of levels is -1, this is a known error from OpenSlide. \
                          OpenSlide returns -1 if an error occured. \
                          See OpenSlide C API documentation."))
-        } else if num_levels >= 0 && num_levels < 256 {
-            Ok(num_levels as u8)
         } else {
-            Err(err_msg(format!("Error: Number of levels is {}. This is more than for any supported \
-                                 vendors, and can indicate an error", num_levels)))
+            Ok(num_levels as u32)
         }
     }
 
@@ -106,18 +120,18 @@ impl OpenSlide {
     ///
     /// This method returns the (width, height) number of pixels of the whole slide image at the
     /// specified level. Returns an error if the level is invalid
-    pub fn get_level_dimensions(
+    pub fn get_level_dimensions<T: Integer + ToPrimitive + Debug + Display + Clone + Copy>(
         &self,
-        level: u8,
+        level: T,
     ) -> Result<(u64, u64), Error> {
 
         let max_num_levels = self.get_level_count()?;
-        if level > max_num_levels {
+        if level.to_u32().ok_or(err_msg("Conversion to primitive error"))? > max_num_levels {
             return Err(err_msg(format!("Error: Specified level {} is larger than the max slide level {}",
                                        level, max_num_levels)));
         }
 
-        let (width, height) = bindings::get_level_dimensions(self.osr, level as i32)?;
+        let (width, height) = bindings::get_level_dimensions(self.osr, level.to_i32().ok_or(err_msg("Conversion to primitive error"))?)?;
 
         if width < -1 {
             return Err(err_msg(format!("Error: Width is {}, this is an unknown error from OpenSlide. \
@@ -143,18 +157,18 @@ impl OpenSlide {
     }
 
     /// Get the downsampling factor of a given level.
-    pub fn get_level_downsample(
+    pub fn get_level_downsample<T: Integer + Unsigned + ToPrimitive + Debug + Display + Clone + Copy>(
         &self,
-        level: u8,
+        level: T,
     ) -> Result<f64, Error> {
 
         let max_num_levels = self.get_level_count()?;
-        if level > max_num_levels {
+        if level.to_u32().ok_or(err_msg("Conversion to primitive error"))? > max_num_levels {
             return Err(err_msg(format!("Error: Specified level {} is larger than the max slide level {}",
                                        level, max_num_levels)));
         }
 
-        let downsample_factor = bindings::get_level_downsample(self.osr, level as i32)?;
+        let downsample_factor = bindings::get_level_downsample(self.osr, level.to_i32().ok_or(err_msg("Conversion to primitive error"))?)?;
 
         if downsample_factor < 0.0 {
             return Err(err_msg(format!("Error: Downsample factor is {}, this is an error from \
@@ -166,17 +180,17 @@ impl OpenSlide {
     }
 
     /// Get the best level to use for displaying the given downsample factor.
-    pub fn get_best_level_for_downsample(
+    pub fn get_best_level_for_downsample<T: Num + ToPrimitive + PartialOrd + Debug + Display + Clone + Copy>(
         &self,
-        downsample_factor: f64,
-    ) -> Result<u8, Error> {
+        downsample_factor: T,
+    ) -> Result<u32, Error> {
 
-        if downsample_factor < 0.0 {
+        if downsample_factor < zero() {
             return Err(err_msg(format!("Error: Only non-negative downsample factor is allowed. \
                                         You specified {}. ", downsample_factor)))
         }
 
-        let level = bindings::get_best_level_for_downsample(self.osr, downsample_factor)?;
+        let level = bindings::get_best_level_for_downsample(self.osr, downsample_factor.to_f64().ok_or(err_msg("Conversion to primitive error"))?)?;
 
         if level < -1 {
             Err(err_msg(format!("Error: Returned level is {}, this is an unknown error from OpenSlide. \
@@ -186,12 +200,59 @@ impl OpenSlide {
             Err(err_msg("Error: Returned level is -1, this is a known error from openslide. \
                          OpenSlide returns -1 if an error occured. \
                          See OpenSlide C API documentation."))
-        } else if level >= 0 && level < 256 {
-            Ok(level as u8)
         } else {
-            Err(err_msg(format!("Error: Returned level is {}. This is more than for any supported \
-                                 vendors, and can indicate an error", level)))
+            Ok(level as u32)
         }
+    }
+
+    /// Return (new_height, new_width) where
+    ///
+    /// new_height = min(height, max_height)
+    /// new_width = min(width, max_width)
+    ///
+    /// and max_{height, width} are computed based on the top left corner coordinates and the
+    /// dimensions of the image.
+    fn get_feasible_dimensions<T: Integer + Unsigned + ToPrimitive + Debug + Display + Clone + Copy>(
+        &self,
+        top_left_lvl0_row: T,
+        top_left_lvl0_col: T,
+        level: T,
+        height: T,
+        width: T,
+    ) -> Result<(u64, u64), Error> {
+        let (max_width, max_height) = self.get_level_dimensions(level)?;
+        let downsample_factor = self.get_level_downsample(level)?;
+
+        let tl_row_this_lvl = top_left_lvl0_row.to_f64().ok_or(err_msg("Conversion to primitive error"))? /
+                              downsample_factor;
+        let tl_col_this_lvl = top_left_lvl0_col.to_f64().ok_or(err_msg("Conversion to primitive error"))? /
+                              downsample_factor;
+
+        let new_height = height.to_u64()
+                               .ok_or(err_msg("conversion to primitive error"))?
+                               .min(max_height - tl_row_this_lvl.round() as u64);
+        let new_width = width.to_u64()
+                             .ok_or(err_msg("Conversion to primitive error"))?
+                             .min(max_width - tl_col_this_lvl.round() as u64);
+
+        if new_height < height.to_u64().ok_or(err_msg("conversion to primitive error"))? {
+            println!("WARNING: Requested region height is changed from {} to {} in order to fit",
+                     height, new_height);
+        }
+        if new_width < width.to_u64().ok_or(err_msg("conversion to primitive error"))? {
+            println!("WARNING: Requested region width is changed from {} to {} in order to fit",
+                     width, new_width);
+        }
+
+        if new_height > max_height {
+            return Err(err_msg(format!("Requested height {} exceeds maximum {}", height, max_height)))
+        }
+
+        if new_width > max_width {
+            return Err(err_msg(format!("Requested width {} exceeds maximum {}", width, max_width)))
+        }
+
+        Ok((new_height, new_width))
     }
 
     /// Copy pre-multiplied ARGB data from a whole slide image.
@@ -205,20 +266,27 @@ impl OpenSlide {
     ///     level: At which level to grab the region from
     ///     height: Height in pixels of the outputted region
     ///     width: Width in pixels of the outputted region
-    pub fn read_region(
+    pub fn read_region<T: Integer + Unsigned + ToPrimitive + Debug + Display + Clone + Copy>(
         &self,
-        top_left_lvl0_row: u32,
-        top_left_lvl0_col: u32,
-        level: u8,
-        height: u32,
-        width: u32,
+        top_left_lvl0_row: T,
+        top_left_lvl0_col: T,
+        level: T,
+        height: T,
+        width: T,
     ) -> Result<RgbaImage, Error> {
+
+        let (height, width) = self.get_feasible_dimensions(top_left_lvl0_row,
+                                                           top_left_lvl0_col,
+                                                           level,
+                                                           height,
+                                                           width)?;
+
         let buffer = bindings::read_region(self.osr,
-                                           top_left_lvl0_col as i64,
-                                           top_left_lvl0_row as i64,
-                                           level as i32,
-                                           width as i64,
-                                           height as i64)?;
+                                           top_left_lvl0_col.to_i64().ok_or(err_msg("Conversion to primitive error"))?,
+                                           top_left_lvl0_row.to_i64().ok_or(err_msg("Conversion to primitive error"))?,
+                                           level.to_i32().ok_or(err_msg("Conversion to primitive error"))?,
+                                           width.to_i64().ok_or(err_msg("Conversion to primitive error"))?,
+                                           height.to_i64().ok_or(err_msg("Conversion to primitive error"))?)?;
         let word_repr = utils::WordRepresentation::BigEndian;
         utils::decode_buffer(&buffer, height, width, word_repr)
     }
@@ -237,6 +305,4 @@ impl OpenSlide {
         }
         Ok(properties)
     }
-
-
 }

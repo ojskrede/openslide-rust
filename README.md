@@ -10,7 +10,7 @@ This library has been built for
 
 ```
 OpenSlide 3.4.1
-Rust 1.26
+Rust 1.30
 ```
 
 I cannot guarantee that it works for other versions.

@@ -197,6 +197,11 @@ impl Properties {
         self.aperio_properties.time.clone()
     }
 
+    /// Time zone
+    pub fn time_zone(&self) -> Option<String> {
+        self.aperio_properties.time_zone.clone()
+    }
+
     /// User
     pub fn user(&self) -> Option<String> {
         self.aperio_properties.user.clone()
@@ -266,5 +271,21 @@ impl Properties {
 
     pub fn filtered(&self) -> Option<u32> {
         self.aperio_properties.filtered
+    }
+
+    pub fn display_color(&self) -> Option<u32> {
+        self.aperio_properties.display_color
+    }
+
+    pub fn exposure_time(&self) -> Option<u32> {
+        self.aperio_properties.exposure_time
+    }
+
+    pub fn exposure_scale(&self) -> Option<f32> {
+        self.aperio_properties.exposure_scale
+    }
+
+    pub fn sesson_mode(&self) -> Option<String> {
+        self.aperio_properties.sesson_mode.clone()
     }
 }

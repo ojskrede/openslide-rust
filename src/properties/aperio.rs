@@ -67,86 +67,39 @@ impl Aperio {
 
     /// Print available properties (key, value) (where the value is not `None`).
     pub fn print_available(&self) {
-        match self.filename {
-            Some(ref val) => println!("Filename: {}", val),
-            None => {},
-        }
-        match self.image_id {
-            Some(ref val) => println!("Image ID: {}", val),
-            None => {},
-        }
-        match self.scan_scope_id {
-            Some(ref val) => println!("ScanScope ID: {}", val),
-            None => {},
-        }
-        match self.date {
-            Some(ref val) => println!("Date: {}", val),
-            None => {},
-        }
-        match self.time {
-            Some(ref val) => println!("Time: {}", val),
-            None => {},
-        }
-        match self.user {
-            Some(ref val) => println!("User: {}", val),
-            None => {},
-        }
-        match self.icc_profile {
-            Some(ref val) => println!("ICC Profile: {}", val),
-            None => {},
-        }
-        match self.parmset {
-            Some(ref val) => println!("Parmset: {}", val),
-            None => {},
-        }
-        match self.original_height {
-            Some(ref val) => println!("Original height: {}", val),
-            None => {},
-        }
-        match self.original_width {
-            Some(ref val) => println!("Original width: {}", val),
-            None => {},
-        }
-        match self.top {
-            Some(ref val) => println!("Top: {}", val),
-            None => {},
-        }
-        match self.left {
-            Some(ref val) => println!("Left: {}", val),
-            None => {},
-        }
-        match self.mpp {
-            Some(ref val) => println!("Microns per pixel: {}", val),
-            None => {},
-        }
-        match self.line_camera_skew {
-            Some(ref val) => println!("Line camera skew: {}", val),
-            None => {},
-        }
-        match self.line_area_x_offset {
-            Some(ref val) => println!("Line area x offset: {}", val),
-            None => {},
-        }
-        match self.line_area_y_offset {
-            Some(ref val) => println!("Line area y offset: {}", val),
-            None => {},
-        }
-        match self.focus_offset {
-            Some(ref val) => println!("Focus offset: {}", val),
-            None => {},
-        }
-        match self.app_mag {
-            Some(ref val) => println!("AppMag: {}", val),
-            None => {},
-        }
-        match self.stripe_width {
-            Some(ref val) => println!("Stripe width: {}", val),
-            None => {},
-        }
-        match self.filtered {
-            Some(ref val) => println!("Filtered: {}", val),
-            None => {},
-        }
+        // TODO: Find elegant way of writing
+        //
+        // match self.property {
+        //     Some(ref val) => println!("Property: {}", val),
+        //     None => {},
+        // }
+        //
+
+        self.filename.clone().map(|val| println!("Filename: {}", val) );
+        self.image_id.clone().map(|val| println!("Image ID: {}", val) );
+        self.scan_scope_id.clone().map(|val| println!("ScanScope ID: {}", val) );
+        self.date.clone().map(|val| println!("Date: {}", val) );
+        self.time.clone().map(|val| println!("Time: {}", val) );
+        self.time_zone.clone().map(|val| println!("Time: {}", val) );
+        self.user.clone().map(|val| println!("User: {}", val) );
+        self.icc_profile.clone().map(|val| println!("ICC Profile: {}", val) );
+        self.parmset.clone().map(|val| println!("Parmset: {}", val) );
+        self.original_height.map(|val| println!("Original height: {}", val) );
+        self.original_width.map(|val| println!("Original width: {}", val) );
+        self.top.map(|val| println!("Top: {}", val) );
+        self.left.map(|val| println!("Left: {}", val) );
+        self.mpp.map(|val| println!("Microns per pixel: {}", val) );
+        self.line_camera_skew.map(|val| println!("Line camera skew: {}", val) );
+        self.line_area_x_offset.map(|val| println!("Line area x offset: {}", val) );
+        self.line_area_y_offset.map(|val| println!("Line area y offset: {}", val) );
+        self.focus_offset.map(|val| println!("Focus offset: {}", val) );
+        self.app_mag.map(|val| println!("AppMag: {}", val) );
+        self.stripe_width.map(|val| println!("Stripe width: {}", val) );
+        self.filtered.map(|val| println!("Filtered: {}", val) );
+        self.display_color.map(|val| println!("Display color: {}", val) );
+        self.exposure_time.map(|val| println!("Exposure time: {}", val) );
+        self.exposure_scale.map(|val| println!("Exposure scale: {}", val) );
+        self.sesson_mode.clone().map(|val| println!("Sesson mode: {}", val) );
     }
 
 }

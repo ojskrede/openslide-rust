@@ -5,6 +5,7 @@ use std::fmt::{Display, Debug};
 use num::{ToPrimitive, Unsigned, Integer};
 use image::{Rgba, RgbaImage};
 use failure::{err_msg, Error, format_err};
+use byteorder::{ByteOrder};
 
 
 /// A list of supported formats
@@ -77,6 +78,18 @@ pub enum WordRepresentation {
     LittleEndian,
 }
 
+fn slice_bit_array(bit_array: &str, start: usize, end: usize, name: &str) -> Result<String, Error> {
+    if start >= bit_array.len() {
+        Err(format_err!("Start index {} is out of bounds for bit array with length {} in channel {}",
+                        start, bit_array.len(), name))
+    }
+    if end >= bit_array.len() {
+        Err(format_err!("End index {} is out of bounds for bit array with length {} in channel {}",
+                        end, bit_array.len(), name))
+    }
+    Ok(String::from(&bit_array[start..end]));
+}
+
 fn bit_to_u8(bit_representation: &str, name: &str) -> Result<u8, Error> {
     match u8::from_str_radix(bit_representation, 2) {
         Ok(val) => Ok(val),
@@ -106,9 +119,11 @@ pub fn decode_buffer<T: Unsigned + Integer + ToPrimitive + Debug + Display + Clo
 
     for (col, row, pixel) in rgba_image.enumerate_pixels_mut() {
         let curr_pos = row * width.to_u32().ok_or(err_msg("Conversion to primitive error"))? + col;
-        let values = buffer[curr_pos as usize];
+        let value = buffer[curr_pos as usize];
         // TODO: Iterate over chars() instead (?)
+        /*
         let bit_repr = format!("{:b}", values);
+
         let alpha_bit_repr = String::from(&bit_repr[(8 * a_pos)..(8 * a_pos + 8)]);
         let red_bit_repr = String::from(&bit_repr[(8 * r_pos)..(8 * r_pos + 8)]);
         let green_bit_repr = String::from(&bit_repr[(8 * g_pos)..(8 * g_pos + 8)]);
@@ -118,6 +133,10 @@ pub fn decode_buffer<T: Unsigned + Integer + ToPrimitive + Debug + Display + Clo
         let mut red = bit_to_u8(&red_bit_repr, "red")?;
         let mut green = bit_to_u8(&green_bit_repr, "green")?;
         let mut blue = bit_to_u8(&blue_bit_repr, "blue")?;
+        */
+
+        let mut buf = [0; 4];
+        let (alpha, mut red, mut green, mut blue) = byteorder::BigEndian::write_u32(&mut buf, value);
 
 
         if alpha != 0 && alpha != 255 {

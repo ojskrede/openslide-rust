@@ -116,6 +116,7 @@ extern crate libc;
 extern crate failure;
 extern crate image;
 extern crate num;
+extern crate byteorder;
 
 /*
 pub use bindings::{OpenSlideT,

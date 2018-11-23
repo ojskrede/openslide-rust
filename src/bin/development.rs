@@ -7,10 +7,8 @@ extern crate image;
 #[macro_use] extern crate clap;
 
 use std::path::Path;
-use std::path;
 use std::fs;
 
-use image::{RgbaImage};
 use failure::{Error, err_msg};
 use clap::{Arg, App, ArgMatches};
 use openslide::OpenSlide;
@@ -86,7 +84,7 @@ fn get_cli<'a>() -> ArgMatches<'a> {
 
 fn write_region(
     os: &OpenSlide,
-    out_dir: &path::Path,
+    out_dir: &Path,
     source_row: u32,
     source_col: u32,
     target_height: i32,
@@ -130,7 +128,7 @@ fn main() -> Result<(), Error> {
 
     let input_file = match matches.value_of("input_file") {
         Some(val) => {
-            let filepath = path::Path::new(val);
+            let filepath = Path::new(val);
             if filepath.exists() {
                 filepath
             } else {
@@ -142,7 +140,7 @@ fn main() -> Result<(), Error> {
 
     let out_dir = match matches.value_of("out_root_dir") {
         Some(val) => {
-            let dirpath = path::Path::new(val);
+            let dirpath = Path::new(val);
             if !dirpath.exists() {
                 fs::create_dir_all(&dirpath)?;
             }

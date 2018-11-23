@@ -1,10 +1,10 @@
 //! Openslide properties
 //!
 
-use std::u32;
-use std::f32;
-use std::collections::HashMap;
 use num::Num;
+use std::collections::HashMap;
+use std::f32;
+use std::u32;
 
 /// Properties defined for every level
 #[derive(Clone, Debug, Default)]
@@ -17,30 +17,29 @@ pub struct LevelProperties {
 }
 
 impl LevelProperties {
-
     /// Print available properties (key, value) (where the value is not `None`).
     ///
     /// # Level properties
     pub fn print_available(&self, level: usize) {
         match self.downsample {
             Some(val) => println!("Level {} downsample factor: {}", level, val),
-            None => {},
+            None => {}
         }
         match self.height {
             Some(val) => println!("Level {} height: {}", level, val),
-            None => {},
+            None => {}
         }
         match self.width {
             Some(val) => println!("Level {} width: {}", level, val),
-            None => {},
+            None => {}
         }
         match self.tile_height {
             Some(val) => println!("Level {} tile height: {}", level, val),
-            None => {},
+            None => {}
         }
         match self.tile_width {
             Some(val) => println!("Level {} tile width: {}", level, val),
-            None => {},
+            None => {}
         }
     }
 
@@ -85,7 +84,6 @@ pub struct OpenSlide {
 }
 
 impl OpenSlide {
-
     /// Initialises the OpenSlide properties.
     ///
     /// This needs a property map in order to compute the number of levels. This is needed because
@@ -103,9 +101,7 @@ impl OpenSlide {
                 }
                 level_count
             }
-            None => {
-                computed_level_count
-            }
+            None => computed_level_count,
         };
 
         // Fill levels with default level properties so that it can be filled afterwards in
@@ -117,7 +113,7 @@ impl OpenSlide {
                     level_vec.push(LevelProperties::default());
                 }
                 Some(level_vec)
-            },
+            }
             None => None,
         };
 
@@ -139,9 +135,13 @@ impl OpenSlide {
             "openslide.quickhash-1" => self.quickhash_1 = Some(String::from(value)),
             "openslide.mpp-x" => self.mpp_x = Some(f32::from_str_radix(value, 10).unwrap()),
             "openslide.mpp-y" => self.mpp_y = Some(f32::from_str_radix(value, 10).unwrap()),
-            "openslide.objective-power" => self.objective_power = Some(u32::from_str_radix(value, 10).unwrap()),
+            "openslide.objective-power" => {
+                self.objective_power = Some(u32::from_str_radix(value, 10).unwrap())
+            }
             "openslide.comment" => self.comment = Some(String::from(value)),
-            "openslide.level-count" => self.level_count = Some(u32::from_str_radix(value, 10).unwrap()),
+            "openslide.level-count" => {
+                self.level_count = Some(u32::from_str_radix(value, 10).unwrap())
+            }
             _ => {
                 if name.contains("level[") {
                     let level = {
@@ -151,68 +151,80 @@ impl OpenSlide {
                     };
                     match self.levels {
                         Some(ref mut vector) => {
-                            let last_part = name.split(&format!("openslide.level[{}].", level)).last().unwrap();
+                            let last_part = name
+                                .split(&format!("openslide.level[{}].", level))
+                                .last()
+                                .unwrap();
                             match last_part {
-                                "downsample" => vector[level].downsample = Some(f32::from_str_radix(value, 10).unwrap()),
-                                "height" => vector[level].height = Some(u32::from_str_radix(value, 10).unwrap()),
-                                "width" => vector[level].width = Some(u32::from_str_radix(value, 10).unwrap()),
-                                "tile-height" => vector[level].tile_height = Some(u32::from_str_radix(value, 10).unwrap()),
-                                "tile-width" => vector[level].tile_width = Some(u32::from_str_radix(value, 10).unwrap()),
-                                _ => println!("Could not parse property with name {} and value {}", name, value),
+                                "downsample" => {
+                                    vector[level].downsample =
+                                        Some(f32::from_str_radix(value, 10).unwrap())
+                                }
+                                "height" => {
+                                    vector[level].height =
+                                        Some(u32::from_str_radix(value, 10).unwrap())
+                                }
+                                "width" => {
+                                    vector[level].width =
+                                        Some(u32::from_str_radix(value, 10).unwrap())
+                                }
+                                "tile-height" => {
+                                    vector[level].tile_height =
+                                        Some(u32::from_str_radix(value, 10).unwrap())
+                                }
+                                "tile-width" => {
+                                    vector[level].tile_width =
+                                        Some(u32::from_str_radix(value, 10).unwrap())
+                                }
+                                _ => println!(
+                                    "Could not parse property with name {} and value {}",
+                                    name, value
+                                ),
                             }
-                        },
+                        }
                         None => println!("hello"),
                     }
                 } else {
-                    println!("Could not parse property with name {} and value {}", name, value);
+                    println!(
+                        "Could not parse property with name {} and value {}",
+                        name, value
+                    );
                 }
-            },
+            }
         }
     }
 
     /// Print available properties (key, value) (where the value is not `None`).
     pub fn print_available(&self) {
-        match self.vendor {
-            Some(ref val) => println!("Vendor: {}", val),
-            None => {},
-        }
-        match self.quickhash_1 {
-            Some(ref val) => println!("Quickhash 1: {}", val),
-            None => {},
-        }
-        match self.mpp_x {
-            Some(val) => println!("Microns per pixel x: {}", val),
-            None => {},
-        }
-        match self.mpp_y {
-            Some(val) => println!("Microns per pixel y: {}", val),
-            None => {},
-        }
-        match self.objective_power {
-            Some(val) => println!("Objective power: {}", val),
-            None => {},
-        }
-        match self.comment {
-            Some(ref val) => println!("Comment: {}", val),
-            None => {},
-        }
-        match self.level_count {
-            Some(val) => println!("Number of levels: {}", val),
-            None => {},
-        }
+        self.vendor
+            .clone()
+            .map(|val| println!("Vendor: {}", val));
+        self.quickhash_1
+            .clone()
+            .map(|val| println!("Quickhash 1: {}", val));
+        self.mpp_x
+            .map(|val| println!("Microns per pixel x: {}", val));
+        self.mpp_y
+            .map(|val| println!("Microns per pixel y: {}", val));
+        self.objective_power
+            .map(|val| println!("Objective power: {}", val));
+        self.comment
+            .clone()
+            .map(|val| println!("Comment: {}", val));
+        self.level_count
+            .map(|val| println!("Number of levels: {}", val));
         match self.levels {
             Some(ref val) => {
                 for (number, level) in val.iter().enumerate() {
                     level.print_available(number);
                 }
-            },
-            None => {},
+            }
+            None => {}
         }
     }
 
     // TODO: Consider implementing getter functions and make struct variables private.
 }
-
 
 /// Find the max level from the `openslide.level[<level>].<level-property>` properties.
 fn find_max_level(property_map: &HashMap<String, String>) -> Option<u32> {
@@ -223,7 +235,7 @@ fn find_max_level(property_map: &HashMap<String, String>) -> Option<u32> {
             let number_as_string = starts_with_number.split("]").nth(0).unwrap();
             match u32::from_str_radix(number_as_string, 10) {
                 Ok(val) => found_levels.push(val),
-                Err(_) => {},
+                Err(_) => {}
             }
         }
     }

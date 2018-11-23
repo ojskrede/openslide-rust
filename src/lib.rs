@@ -112,11 +112,11 @@
 //! ```
 //!
 
-extern crate libc;
+extern crate byteorder;
 extern crate failure;
 extern crate image;
+extern crate libc;
 extern crate num;
-extern crate byteorder;
 
 /*
 pub use bindings::{OpenSlideT,

@@ -1,8 +1,8 @@
 //! Tiff properties
 //!
 
-use std::f32;
 use num::Num;
+use std::f32;
 
 #[derive(Clone, Debug, Default)]
 pub struct Tiff {
@@ -33,37 +33,27 @@ impl Tiff {
 
     /// Print available properties (key, value) (where the value is not `None`).
     pub fn print_available(&self) {
-        match self.image_description {
-            Some(ref val) => println!("Image description: {}", val),
-            None => {},
-        }
-        match self.software {
-            Some(ref val) => println!("Software: {}", val),
-            None => {},
-        }
-        match self.model {
-            Some(ref val) => println!("Model: {}", val),
-            None => {},
-        }
-        match self.date_time {
-            Some(ref val) => println!("Date time: {}", val),
-            None => {},
-        }
-        match self.make {
-            Some(ref val) => println!("Make: {}", val),
-            None => {},
-        }
-        match self.x_resolution {
-            Some(val) => println!("X resolution: {}", val),
-            None => {},
-        }
-        match self.y_resolution {
-            Some(val) => println!("Y resolution: {}", val),
-            None => {},
-        }
-        match self.resolution_unit {
-            Some(ref val) => println!("Resolution unit: {}", val),
-            None => {},
-        }
+        self.image_description
+            .clone()
+            .map(|val| println!("Image description: {}", val));
+        self.software
+            .clone()
+            .map(|val| println!("Software: {}", val));
+        self.model
+            .clone()
+            .map(|val| println!("Model: {}", val));
+        self.date_time
+            .clone()
+            .map(|val| println!("Date time: {}", val));
+        self.make
+            .clone()
+            .map(|val| println!("Make: {}", val));
+        self.x_resolution
+            .map(|val| println!("X resolution: {}", val));
+        self.y_resolution
+            .map(|val| println!("Y resolution: {}", val));
+        self.resolution_unit
+            .clone()
+            .map(|val| println!("Resolution unit: {}", val));
     }
 }

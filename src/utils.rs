@@ -1,12 +1,10 @@
 //! Misc utility definitions
 
-use std::fmt::{Display, Debug};
-
-use num::{ToPrimitive, Unsigned, Integer};
-use image::{Rgba, RgbaImage};
+use byteorder::ByteOrder;
 use failure::{err_msg, Error};
-use byteorder::{ByteOrder};
-
+use image::{Rgba, RgbaImage};
+use num::{Integer, ToPrimitive, Unsigned};
+use std::fmt::{Debug, Display};
 
 /// A list of supported formats
 ///
@@ -84,30 +82,44 @@ pub fn decode_buffer<T: Unsigned + Integer + ToPrimitive + Debug + Display + Clo
     buffer: &Vec<u32>,
     height: T,
     width: T,
-    word_representation: WordRepresentation
+    word_representation: WordRepresentation,
 ) -> Result<RgbaImage, Error> {
-
     let mut rgba_image = RgbaImage::new(
-        width.to_u32().ok_or(err_msg("Conversion to primitive error"))?,
-        height.to_u32().ok_or(err_msg("Conversion to primitive error"))?);
+        width
+            .to_u32()
+            .ok_or(err_msg("Conversion to primitive error"))?,
+        height
+            .to_u32()
+            .ok_or(err_msg("Conversion to primitive error"))?,
+    );
 
     for (col, row, pixel) in rgba_image.enumerate_pixels_mut() {
-        let curr_pos = row * width.to_u32().ok_or(err_msg("Conversion to primitive error"))? + col;
+        let curr_pos = row * width
+            .to_u32()
+            .ok_or(err_msg("Conversion to primitive error"))?
+            + col;
         let value = buffer[curr_pos as usize];
 
         let mut buf = [0; 4];
         match word_representation {
-            // alpha, red, green, blue
             WordRepresentation::BigEndian => byteorder::BigEndian::write_u32(&mut buf, value),
-            // blue, green, red, alpha
             WordRepresentation::LittleEndian => byteorder::BigEndian::write_u32(&mut buf, value),
         };
         let [alpha, mut red, mut green, mut blue] = buf;
 
         if alpha != 0 && alpha != 255 {
-            red = (red as f32 * (255.0 / alpha as f32)).round().max(0.0).min(255.0) as u8;
-            green = (green as f32 * (255.0 / alpha as f32)).round().max(0.0).min(255.0) as u8;
-            blue = (blue as f32 * (255.0 / alpha as f32)).round().max(0.0).min(255.0) as u8;
+            red = (red as f32 * (255.0 / alpha as f32))
+                .round()
+                .max(0.0)
+                .min(255.0) as u8;
+            green = (green as f32 * (255.0 / alpha as f32))
+                .round()
+                .max(0.0)
+                .min(255.0) as u8;
+            blue = (blue as f32 * (255.0 / alpha as f32))
+                .round()
+                .max(0.0)
+                .min(255.0) as u8;
         }
 
         *pixel = Rgba([red, green, blue, alpha]);

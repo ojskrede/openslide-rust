@@ -1,9 +1,9 @@
 //! Properties from various slides
 //!
 
+mod aperio;
 mod openslide;
 mod tiff;
-mod aperio;
 //mod hamamatsu;
 
 use std::collections::HashMap;
@@ -40,7 +40,6 @@ pub struct Properties {
 }
 
 impl Properties {
-
     /// Initialises a new `Properties` struct.
     ///
     /// This is done by submitting a property_map, which is obtained from the

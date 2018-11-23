@@ -19,8 +19,8 @@ struct FocalPlane {
 
 #[derive(Clone, Debug)]
 struct Ahex {
-    value: Option<String>, // [u8; 256] ?
-    ploidy: Option<String>, // [u8; 256] ?
+    value: Option<String>,        // [u8; 256] ?
+    ploidy: Option<String>,       // [u8; 256] ?
     fluorescence: Option<String>, // [u8; 256] ?
 }
 

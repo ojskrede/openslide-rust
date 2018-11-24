@@ -296,7 +296,7 @@ impl OpenSlide {
 
         let new_height = height
             .to_u64()
-            .ok_or(err_msg("conversion to primitive error"))?
+            .ok_or(err_msg("Conversion to primitive error"))?
             .min(max_height - tl_row_this_lvl.round() as u64);
         let new_width = width
             .to_u64()
@@ -305,7 +305,7 @@ impl OpenSlide {
 
         if new_height < height
             .to_u64()
-            .ok_or(err_msg("conversion to primitive error"))?
+            .ok_or(err_msg("Conversion to primitive error"))?
         {
             println!(
                 "WARNING: Requested region height is changed from {} to {} in order to fit",

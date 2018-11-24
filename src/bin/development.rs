@@ -94,6 +94,7 @@ fn write_region(
 
     let zoom_lvl = os.get_best_level_for_downsample(zoom_factor as f64)?;
     println!("Best zoom level for zoom factor {} is: {}", zoom_factor, zoom_lvl);
+    println!("Level {} dimensions: {:?}", zoom_lvl, os.get_level_dimensions(zoom_lvl)?);
 
     let target_height = if target_height == -1 {
         let (_, full_height) = os.get_level_dimensions(zoom_lvl)?;
@@ -168,6 +169,7 @@ fn main() -> Result<(), Error> {
     let os = OpenSlide::new(input_file)?;
 
     if matches.is_present("print_properties") {
+        println!("Properties");
         for (key, val) in os.get_properties()? {
             println!("{0:<40} {1}", key, val);
         }

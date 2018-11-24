@@ -191,32 +191,23 @@ impl OpenSlide {
         level: T,
     ) -> Result<f64, Error> {
         let max_num_levels = self.get_level_count()?;
-        if level
-            .to_u32()
-            .ok_or(err_msg("Conversion to primitive error"))?
-            > max_num_levels
-        {
+        let level = level.to_i32().ok_or(err_msg("Conversion to primitive error"))?;
+        if level > (max_num_levels as i32) {
             return Err(err_msg(format!(
                 "Error: Specified level {} is larger than the max slide level {}",
                 level, max_num_levels
             )));
         }
 
-        let downsample_factor = unsafe {
-            bindings::get_level_downsample(
-                self.osr,
-                level
-                    .to_i32()
-                    .ok_or(err_msg("Conversion to primitive error"))?,
-            )?
-        };
+        let downsample_factor = unsafe { bindings::get_level_downsample(self.osr, level)? };
 
         if downsample_factor < 0.0 {
             return Err(err_msg(format!(
-                "Error: Downsample factor is {}, this is an error from \
+                "Error: When trying to get a downsample factor for level {},\
+                 OpenSlide returned a downsample factor {}, this is an error from \
                  OpenSlide. OpenSlide returns -1.0 if an error occured. \
                  See OpenSlide C API documentation.",
-                downsample_factor
+                level, downsample_factor
             )));
         }
 

@@ -94,6 +94,7 @@ fn write_region(
 
     let zoom_lvl = os.get_best_level_for_downsample(zoom_factor as f64)?;
     println!("Best zoom level for zoom factor {} is: {}", zoom_factor, zoom_lvl);
+    println!("Level {} downsample: {}", zoom_lvl, os.get_level_downsample(zoom_lvl as u8)?);
     println!("Level {} dimensions: {:?}", zoom_lvl, os.get_level_dimensions(zoom_lvl)?);
 
     let target_height = if target_height == -1 {

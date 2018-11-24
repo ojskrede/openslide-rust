@@ -15,6 +15,10 @@ The changelog format is based on [this template](http://keepachangelog.com/en/1.
 ## TODO:
   - Test for native bindings.
   - Implement properties structs for more formats.
+  - Fix OpenSlide best level suggestions. Example from Aperio:
+factor -> best level -> factor for level
+16.0 -> 1 -> 4
+16.1 -> 2 -> 16
 
 ## [0.2.0] - 2018.11.19
 ### Added

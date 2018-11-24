@@ -63,9 +63,9 @@ impl Properties {
         }
 
         Properties {
-            tiff_properties: tiff_properties,
-            openslide_properties: openslide_properties,
-            aperio_properties: aperio_properties,
+            tiff_properties,
+            openslide_properties,
+            aperio_properties,
         }
     }
 

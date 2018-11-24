@@ -21,25 +21,20 @@ impl LevelProperties {
     ///
     /// # Level properties
     pub fn print_available(&self, level: usize) {
-        match self.downsample {
-            Some(val) => println!("Level {} downsample factor: {}", level, val),
-            None => {}
+        if let Some(ref val) = self.downsample {
+            println!("Level {} downsample factor: {}", level, val)
         }
-        match self.height {
-            Some(val) => println!("Level {} height: {}", level, val),
-            None => {}
+        if let Some(ref val) = self.height {
+            println!("Level {} height: {}", level, val)
         }
-        match self.width {
-            Some(val) => println!("Level {} width: {}", level, val),
-            None => {}
+        if let Some(ref val) = self.width {
+            println!("Level {} width: {}", level, val)
         }
-        match self.tile_height {
-            Some(val) => println!("Level {} tile height: {}", level, val),
-            None => {}
+        if let Some(ref val) = self.tile_height {
+            println!("Level {} tile height: {}", level, val)
         }
-        match self.tile_width {
-            Some(val) => println!("Level {} tile width: {}", level, val),
-            None => {}
+        if let Some(ref val) = self.tile_width {
+            println!("Level {} tile width: {}", level, val)
         }
     }
 
@@ -124,8 +119,8 @@ impl OpenSlide {
             mpp_y: None,
             objective_power: None,
             comment: None,
-            level_count: level_count,
-            levels: levels,
+            level_count,
+            levels,
         }
     }
 
@@ -196,30 +191,31 @@ impl OpenSlide {
 
     /// Print available properties (key, value) (where the value is not `None`).
     pub fn print_available(&self) {
-        self.vendor
-            .clone()
-            .map(|val| println!("Vendor: {}", val));
-        self.quickhash_1
-            .clone()
-            .map(|val| println!("Quickhash 1: {}", val));
-        self.mpp_x
-            .map(|val| println!("Microns per pixel x: {}", val));
-        self.mpp_y
-            .map(|val| println!("Microns per pixel y: {}", val));
-        self.objective_power
-            .map(|val| println!("Objective power: {}", val));
-        self.comment
-            .clone()
-            .map(|val| println!("Comment: {}", val));
-        self.level_count
-            .map(|val| println!("Number of levels: {}", val));
-        match self.levels {
-            Some(ref val) => {
-                for (number, level) in val.iter().enumerate() {
-                    level.print_available(number);
-                }
+        if let Some(ref val) = self.vendor {
+            println!("Vendor: {}", val)
+        }
+        if let Some(ref val) = self.quickhash_1 {
+            println!("Quickhash 1: {}", val)
+        }
+        if let Some(ref val) = self.mpp_x {
+            println!("Microns per pixel x: {}", val)
+        }
+        if let Some(ref val) = self.mpp_y {
+            println!("Microns per pixel y: {}", val)
+        }
+        if let Some(ref val) = self.objective_power {
+            println!("Objective power: {}", val)
+        }
+        if let Some(ref val) = self.comment {
+            println!("Comment: {}", val)
+        }
+        if let Some(ref val) = self.level_count {
+            println!("Number of levels: {}", val)
+        }
+        if let Some(ref val) = self.levels {
+            for (number, level) in val.iter().enumerate() {
+                level.print_available(number);
             }
-            None => {}
         }
     }
 

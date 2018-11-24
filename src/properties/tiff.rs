@@ -33,27 +33,29 @@ impl Tiff {
 
     /// Print available properties (key, value) (where the value is not `None`).
     pub fn print_available(&self) {
-        self.image_description
-            .clone()
-            .map(|val| println!("Image description: {}", val));
-        self.software
-            .clone()
-            .map(|val| println!("Software: {}", val));
-        self.model
-            .clone()
-            .map(|val| println!("Model: {}", val));
-        self.date_time
-            .clone()
-            .map(|val| println!("Date time: {}", val));
-        self.make
-            .clone()
-            .map(|val| println!("Make: {}", val));
-        self.x_resolution
-            .map(|val| println!("X resolution: {}", val));
-        self.y_resolution
-            .map(|val| println!("Y resolution: {}", val));
-        self.resolution_unit
-            .clone()
-            .map(|val| println!("Resolution unit: {}", val));
+        if let Some(ref val) = self.image_description {
+            println!("Image description: {}", val)
+        }
+        if let Some(ref val) = self.software {
+            println!("Software: {}", val)
+        }
+        if let Some(ref val) = self.model {
+            println!("Model: {}", val)
+        }
+        if let Some(ref val) = self.date_time {
+            println!("Date time: {}", val)
+        }
+        if let Some(ref val) = self.make {
+            println!("Make: {}", val)
+        }
+        if let Some(ref val) = self.x_resolution {
+            println!("X resolution: {}", val)
+        }
+        if let Some(ref val) = self.y_resolution {
+            println!("Y resolution: {}", val)
+        }
+        if let Some(ref val) = self.resolution_unit {
+            println!("Resolution unit: {}", val)
+        }
     }
 }

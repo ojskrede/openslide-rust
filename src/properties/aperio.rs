@@ -87,58 +87,80 @@ impl Aperio {
 
     /// Print available properties (key, value) (where the value is not `None`).
     pub fn print_available(&self) {
-        // TODO: Find elegant way of writing
-        //
-        // match self.property {
-        //     Some(ref val) => println!("Property: {}", val),
-        //     None => {},
-        // }
-        //
-
-        self.filename
-            .clone()
-            .map(|val| println!("Filename: {}", val));
-        self.image_id
-            .clone()
-            .map(|val| println!("Image ID: {}", val));
-        self.scan_scope_id
-            .clone()
-            .map(|val| println!("ScanScope ID: {}", val));
-        self.date.clone().map(|val| println!("Date: {}", val));
-        self.time.clone().map(|val| println!("Time: {}", val));
-        self.time_zone.clone().map(|val| println!("Time: {}", val));
-        self.user.clone().map(|val| println!("User: {}", val));
-        self.icc_profile
-            .clone()
-            .map(|val| println!("ICC Profile: {}", val));
-        self.parmset.clone().map(|val| println!("Parmset: {}", val));
-        self.original_height
-            .map(|val| println!("Original height: {}", val));
-        self.original_width
-            .map(|val| println!("Original width: {}", val));
-        self.top.map(|val| println!("Top: {}", val));
-        self.left.map(|val| println!("Left: {}", val));
-        self.mpp.map(|val| println!("Microns per pixel: {}", val));
-        self.line_camera_skew
-            .map(|val| println!("Line camera skew: {}", val));
-        self.line_area_x_offset
-            .map(|val| println!("Line area x offset: {}", val));
-        self.line_area_y_offset
-            .map(|val| println!("Line area y offset: {}", val));
-        self.focus_offset
-            .map(|val| println!("Focus offset: {}", val));
-        self.app_mag.map(|val| println!("AppMag: {}", val));
-        self.stripe_width
-            .map(|val| println!("Stripe width: {}", val));
-        self.filtered.map(|val| println!("Filtered: {}", val));
-        self.display_color
-            .map(|val| println!("Display color: {}", val));
-        self.exposure_time
-            .map(|val| println!("Exposure time: {}", val));
-        self.exposure_scale
-            .map(|val| println!("Exposure scale: {}", val));
-        self.sesson_mode
-            .clone()
-            .map(|val| println!("Sesson mode: {}", val));
+        if let Some(ref val) = self.filename {
+            println!("Filename: {}", val)
+        }
+        if let Some(ref val) = self.image_id {
+            println!("Image ID: {}", val)
+        }
+        if let Some(ref val) = self.scan_scope_id {
+            println!("ScanScope ID: {}", val)
+        }
+        if let Some(ref val) = self.date {
+            println!("Date: {}", val)
+        }
+        if let Some(ref val) = self.time {
+            println!("Time: {}", val)
+        }
+        if let Some(ref val) = self.time_zone {
+            println!("Time: {}", val)
+        }
+        if let Some(ref val) = self.user {
+            println!("User: {}", val)
+        }
+        if let Some(ref val) = self.icc_profile {
+            println!("ICC Profile: {}", val)
+        }
+        if let Some(ref val) = self.parmset {
+            println!("Parmset: {}", val)
+        }
+        if let Some(ref val) = self.original_height {
+            println!("Original height: {}", val)
+        }
+        if let Some(ref val) = self.original_width {
+            println!("Original width: {}", val)
+        }
+        if let Some(ref val) = self.top {
+            println!("Top: {}", val)
+        }
+        if let Some(ref val) = self.left {
+            println!("Left: {}", val)
+        }
+        if let Some(ref val) = self.mpp {
+            println!("Microns per pixel: {}", val)
+        }
+        if let Some(ref val) = self.line_camera_skew {
+            println!("Line camera skew: {}", val)
+        }
+        if let Some(ref val) = self.line_area_x_offset {
+            println!("Line area x offset: {}", val)
+        }
+        if let Some(ref val) = self.line_area_y_offset {
+            println!("Line area y offset: {}", val)
+        }
+        if let Some(ref val) = self.focus_offset {
+            println!("Focus offset: {}", val)
+        }
+        if let Some(ref val) = self.app_mag {
+            println!("AppMag: {}", val)
+        }
+        if let Some(ref val) = self.stripe_width {
+            println!("Stripe width: {}", val)
+        }
+        if let Some(ref val) = self.filtered {
+            println!("Filtered: {}", val)
+        }
+        if let Some(ref val) = self.display_color {
+            println!("Display color: {}", val)
+        }
+        if let Some(ref val) = self.exposure_time {
+            println!("Exposure time: {}", val)
+        }
+        if let Some(ref val) = self.exposure_scale {
+            println!("Exposure scale: {}", val)
+        }
+        if let Some(ref val) = self.sesson_mode {
+            println!("Sesson mode: {}", val)
+        }
     }
 }

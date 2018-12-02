@@ -1,7 +1,7 @@
 //! Misc utility definitions
 
 use byteorder::ByteOrder;
-use failure::{err_msg, Error};
+use failure::{format_err, Error};
 use image::{Rgba, RgbaImage};
 use num::{Integer, ToPrimitive, Unsigned};
 use std::fmt::{Debug, Display};
@@ -87,16 +87,16 @@ pub fn decode_buffer<T: Unsigned + Integer + ToPrimitive + Debug + Display + Clo
     let mut rgba_image = RgbaImage::new(
         width
             .to_u32()
-            .ok_or(err_msg("Conversion to primitive error"))?,
+            .ok_or(format_err!("Conversion to primitive error"))?,
         height
             .to_u32()
-            .ok_or(err_msg("Conversion to primitive error"))?,
+            .ok_or(format_err!("Conversion to primitive error"))?,
     );
 
     for (col, row, pixel) in rgba_image.enumerate_pixels_mut() {
         let curr_pos = row * width
             .to_u32()
-            .ok_or(err_msg("Conversion to primitive error"))?
+            .ok_or(format_err!("Conversion to primitive error"))?
             + col;
         let value = buffer[curr_pos as usize];
 

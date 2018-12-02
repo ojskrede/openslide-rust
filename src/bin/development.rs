@@ -9,7 +9,7 @@ extern crate image;
 use std::path::Path;
 use std::fs;
 
-use failure::{Error, err_msg};
+use failure::{Error, format_err};
 use clap::{Arg, App, ArgMatches};
 use openslide::OpenSlide;
 
@@ -135,7 +135,7 @@ fn main() -> Result<(), Error> {
             if filepath.exists() {
                 filepath
             } else {
-                return Err(err_msg("Input file does not exist"))
+                return Err(format_err!("Input file does not exist"))
             }
         }
         None => unreachable!()

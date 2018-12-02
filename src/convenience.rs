@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use std::fmt::{Debug, Display};
 use std::path::Path;
 
-use failure::{format_err, Error, err_msg};
+use failure::{format_err, Error};
 use image::RgbaImage;
 use num::zero;
 use num::{Integer, Num, ToPrimitive, Unsigned};
@@ -39,13 +39,10 @@ impl OpenSlide {
     /// of OpenSlide objects and reuse them when possible.
     pub fn new(filename: &Path) -> Result<OpenSlide, Error> {
         if !filename.exists() {
-            return Err(err_msg(format!(
-                "Error: Nonexisting path: {}",
-                filename.display()
-            )));
+            return Err(format_err!("Error: Nonexisting path: {}", filename.display()));
         }
 
-        let osr = bindings::open(filename.to_str().ok_or(err_msg("Error: Path to &str"))?)?;
+        let osr = bindings::open(filename.to_str().ok_or(format_err!("Error: Path to &str"))?)?;
 
         let mut property_map = HashMap::<String, String>::new();
         for name in unsafe { bindings::get_property_names(osr)? } {
@@ -64,14 +61,14 @@ impl OpenSlide {
         let num_levels = unsafe { bindings::get_level_count(self.osr)? };
 
         if num_levels < -1 {
-            Err(err_msg(format!(
+            Err(format_err!(
                 "Error: Number of levels is {}, this is an unknown error from OpenSlide. \
                  OpenSlide returns -1 if an error occured. \
                  See OpenSlide C API documentation.",
                 num_levels
-            )))
+            ))
         } else if num_levels == -1 {
-            Err(err_msg(
+            Err(format_err!(
                 "Error: Number of levels is -1, this is a known error from OpenSlide. \
                  OpenSlide returns -1 if an error occured. \
                  See OpenSlide C API documentation.",
@@ -90,14 +87,14 @@ impl OpenSlide {
         let (width, height) = unsafe { bindings::get_level0_dimensions(self.osr)? };
 
         if width < -1 {
-            return Err(err_msg(format!(
+            return Err(format_err!(
                 "Error: Width is {}, this is an unknown error from OpenSlide. \
                  OpenSlide returns -1 if an error occured. \
                  See OpenSlide C API documentation.",
                 width
-            )));
+            ));
         } else if width == -1 {
-            return Err(err_msg(
+            return Err(format_err!(
                 "Error: Width is -1, this is a known error from OpenSlide. \
                  OpenSlide returns -1 if an error occured. \
                  See OpenSlide C API documentation.",
@@ -105,14 +102,14 @@ impl OpenSlide {
         }
 
         if height < -1 {
-            return Err(err_msg(format!(
+            return Err(format_err!(
                 "Error: Height is {}, this is an unknown error from OpenSlide. \
                  OpenSlide returns -1 if an error occured. \
                  See OpenSlide C API documentation.",
                 width
-            )));
+            ));
         } else if height == -1 {
-            return Err(err_msg(
+            return Err(format_err!(
                 "Error: Height is -1, this is a known error from OpenSlide. \
                  OpenSlide returns -1 if an error occured. \
                  See OpenSlide C API documentation.",
@@ -136,14 +133,14 @@ impl OpenSlide {
         let (width, height) = unsafe { bindings::get_level_dimensions(self.osr, level)?};
 
         if width < -1 {
-            return Err(err_msg(format!(
+            return Err(format_err!(
                 "Error: Width is {}, this is an unknown error from OpenSlide. \
                  OpenSlide returns -1 if an error occured. \
                  See OpenSlide C API documentation.",
                 width
-            )));
+            ));
         } else if width == -1 {
-            return Err(err_msg(
+            return Err(format_err!(
                 "Error: Width is -1, this is a known error from openslide. \
                  OpenSlide returns -1 if an error occured. \
                  See OpenSlide C API documentation.",
@@ -151,14 +148,14 @@ impl OpenSlide {
         }
 
         if height < -1 {
-            return Err(err_msg(format!(
+            return Err(format_err!(
                 "Error: Height is {}, this is an unknown error from OpenSlide. \
                  OpenSlide returns -1 if an error occured. \
                  See OpenSlide C API documentation.",
                 width
-            )));
+            ));
         } else if height == -1 {
-            return Err(err_msg(
+            return Err(format_err!(
                 "Error: Height is -1, this is a known error from openslide. \
                  OpenSlide returns -1 if an error occured. \
                  See OpenSlide C API documentation.",
@@ -180,13 +177,13 @@ impl OpenSlide {
         let downsample_factor = unsafe { bindings::get_level_downsample(self.osr, level)? };
 
         if downsample_factor < 0.0 {
-            return Err(err_msg(format!(
+            return Err(format_err!(
                 "Error: When trying to get a downsample factor for level {},\
                  OpenSlide returned a downsample factor {}, this is an error from \
                  OpenSlide. OpenSlide returns -1.0 if an error occured. \
                  See OpenSlide C API documentation.",
                 level, downsample_factor
-            )));
+            ));
         }
 
         Ok(downsample_factor)
@@ -200,11 +197,11 @@ impl OpenSlide {
         downsample_factor: T,
     ) -> Result<u32, Error> {
         if downsample_factor < zero() {
-            return Err(err_msg(format!(
+            return Err(format_err!(
                 "Error: Only non-negative downsample factor is allowed. \
                  You specified {}. ",
                 downsample_factor
-            )));
+            ));
         }
 
         let level = unsafe {
@@ -212,19 +209,19 @@ impl OpenSlide {
                 self.osr,
                 downsample_factor
                     .to_f64()
-                    .ok_or(err_msg("Conversion to primitive error"))?,
+                    .ok_or(format_err!("Conversion to primitive error"))?,
             )?
         };
 
         if level < -1 {
-            Err(err_msg(format!(
+            Err(format_err!(
                 "Error: Returned level is {}, this is an unknown error from OpenSlide. \
                  OpenSlide returns -1 if an error occured. \
                  See OpenSlide C API documentation.",
                 level
-            )))
+            ))
         } else if level == -1 {
-            Err(err_msg(
+            Err(format_err!(
                 "Error: Returned level is -1, this is a known error from openslide. \
                  OpenSlide returns -1 if an error occured. \
                  See OpenSlide C API documentation.",
@@ -256,25 +253,25 @@ impl OpenSlide {
 
         let tl_row_this_lvl = top_left_lvl0_row
             .to_f64()
-            .ok_or(err_msg("Conversion to primitive error"))?
+            .ok_or(format_err!("Conversion to primitive error"))?
             / downsample_factor;
         let tl_col_this_lvl = top_left_lvl0_col
             .to_f64()
-            .ok_or(err_msg("Conversion to primitive error"))?
+            .ok_or(format_err!("Conversion to primitive error"))?
             / downsample_factor;
 
         let new_height = height
             .to_u64()
-            .ok_or(err_msg("Conversion to primitive error"))?
+            .ok_or(format_err!("Conversion to primitive error"))?
             .min(max_height - tl_row_this_lvl.round() as u64);
         let new_width = width
             .to_u64()
-            .ok_or(err_msg("Conversion to primitive error"))?
+            .ok_or(format_err!("Conversion to primitive error"))?
             .min(max_width - tl_col_this_lvl.round() as u64);
 
         if new_height < height
             .to_u64()
-            .ok_or(err_msg("Conversion to primitive error"))?
+            .ok_or(format_err!("Conversion to primitive error"))?
         {
             println!(
                 "WARNING: Requested region height is changed from {} to {} in order to fit",
@@ -283,7 +280,7 @@ impl OpenSlide {
         }
         if new_width < width
             .to_u64()
-            .ok_or(err_msg("conversion to primitive error"))?
+            .ok_or(format_err!("conversion to primitive error"))?
         {
             println!(
                 "WARNING: Requested region width is changed from {} to {} in order to fit",
@@ -292,17 +289,11 @@ impl OpenSlide {
         }
 
         if new_height > max_height {
-            return Err(err_msg(format!(
-                "Requested height {} exceeds maximum {}",
-                height, max_height
-            )));
+            return Err(format_err!("Requested height {} exceeds maximum {}", height, max_height));
         }
 
         if new_width > max_width {
-            return Err(err_msg(format!(
-                "Requested width {} exceeds maximum {}",
-                width, max_width
-            )));
+            return Err(format_err!("Requested width {} exceeds maximum {}", width, max_width));
         }
 
         Ok((new_height, new_width))
@@ -340,19 +331,19 @@ impl OpenSlide {
                 self.osr,
                 top_left_lvl0_col
                     .to_i64()
-                    .ok_or(err_msg("Conversion to primitive error"))?,
+                    .ok_or(format_err!("Conversion to primitive error"))?,
                 top_left_lvl0_row
                     .to_i64()
-                    .ok_or(err_msg("Conversion to primitive error"))?,
+                    .ok_or(format_err!("Conversion to primitive error"))?,
                 level
                     .to_i32()
-                    .ok_or(err_msg("Conversion to primitive error"))?,
+                    .ok_or(format_err!("Conversion to primitive error"))?,
                 width
                     .to_i64()
-                    .ok_or(err_msg("Conversion to primitive error"))?,
+                    .ok_or(format_err!("Conversion to primitive error"))?,
                 height
                     .to_i64()
-                    .ok_or(err_msg("Conversion to primitive error"))?,
+                    .ok_or(format_err!("Conversion to primitive error"))?,
             )?
         };
         let word_repr = utils::WordRepresentation::BigEndian;

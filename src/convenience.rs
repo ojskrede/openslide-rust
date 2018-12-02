@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use std::fmt::{Debug, Display};
 use std::path::Path;
 
-use failure::{err_msg, Error};
+use failure::{format_err, Error, err_msg};
 use image::RgbaImage;
 use num::zero;
 use num::{Integer, Num, ToPrimitive, Unsigned};
@@ -130,25 +130,10 @@ impl OpenSlide {
         &self,
         level: T,
     ) -> Result<(u64, u64), Error> {
-        let max_num_levels = self.get_level_count()?;
-        if level
-            .to_u32()
-            .ok_or(err_msg("Conversion to primitive error"))?
-            > max_num_levels
-        {
-            return Err(err_msg(format!(
-                "Error: Specified level {} is larger than the max slide level {}",
-                level, max_num_levels
-            )));
-        }
+        self.assert_level_validity(level)?;
+        let level = level.to_i32().ok_or(format_err!("Conversion to primitive error"))?;
 
-        let (width, height) = unsafe { bindings::get_level_dimensions(
-            self.osr,
-            level
-                .to_i32()
-                .ok_or(err_msg("Conversion to primitive error"))?,
-        )?};
-
+        let (width, height) = unsafe { bindings::get_level_dimensions(self.osr, level)?};
 
         if width < -1 {
             return Err(err_msg(format!(
@@ -185,20 +170,13 @@ impl OpenSlide {
 
     /// Get the downsampling factor of a given level.
     pub fn get_level_downsample<
-        T: Integer + Unsigned + ToPrimitive + Debug + Display + Clone + Copy,
+        T: Integer + ToPrimitive + Debug + Display + Clone + Copy,
     >(
         &self,
         level: T,
     ) -> Result<f64, Error> {
-        let max_num_levels = self.get_level_count()?;
-        let level = level.to_i32().ok_or(err_msg("Conversion to primitive error"))?;
-        if level > (max_num_levels as i32) {
-            return Err(err_msg(format!(
-                "Error: Specified level {} is larger than the max slide level {}",
-                level, max_num_levels
-            )));
-        }
-
+        self.assert_level_validity(level)?;
+        let level = level.to_i32().ok_or(format_err!("Conversion to primitive error"))?;
         let downsample_factor = unsafe { bindings::get_level_downsample(self.osr, level)? };
 
         if downsample_factor < 0.0 {
@@ -389,8 +367,23 @@ impl OpenSlide {
     pub fn get_properties(&self) -> Result<HashMap<String, String>, Error> {
         let mut properties = HashMap::<String, String>::new();
         for name in unsafe { bindings::get_property_names(self.osr)? } {
+            println!("{}", name);
             properties.insert(name.clone(), unsafe { bindings::get_property_value(self.osr, &name)? });
         }
         Ok(properties)
+    }
+
+
+    /// Check if the given level is valid
+    fn assert_level_validity<T: Integer + ToPrimitive>(&self, level: T) -> Result<(), Error> {
+        let max_num_levels = self.get_level_count()?;
+        let level = level.to_u32().ok_or(format_err!("Conversion to primitive error"))?;
+        if level >= max_num_levels {
+            return Err(format_err!(
+                "Error: Specified level {} is larger than the max slide level {}",
+                level, max_num_levels - 1,
+            ));
+        }
+        Ok(())
     }
 }

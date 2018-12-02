@@ -93,6 +93,7 @@ fn write_region(
 ) -> Result<(), Error> {
 
     let zoom_lvl = os.get_best_level_for_downsample(zoom_factor as f64)?;
+    println!("Max number of levels: {}", os.get_level_count()?);
     println!("Best zoom level for zoom factor {} is: {}", zoom_factor, zoom_lvl);
     println!("Level {} downsample: {}", zoom_lvl, os.get_level_downsample(zoom_lvl as u8)?);
     println!("Level {} dimensions: {:?}", zoom_lvl, os.get_level_dimensions(zoom_lvl)?);
@@ -169,11 +170,19 @@ fn main() -> Result<(), Error> {
 
     let os = OpenSlide::new(input_file)?;
 
+    println!("Num levels: {}", os.get_level_count()?);
+    println!("Dimensions at level 0: {:?}", os.get_level0_dimensions()?);
+    println!("Dimensions at level 0: {:?}", os.get_level_dimensions(0)?);
+    println!("Downsample factor at level 0: {}", os.get_level_downsample(0)?);
+    println!("Best level for downsampling factor 4.5: {}", os.get_best_level_for_downsample(4.5)?);
+
     if matches.is_present("print_properties") {
-        println!("Properties");
+        println!("Properties from dict");
         for (key, val) in os.get_properties()? {
             println!("{0:<40} {1}", key, val);
         }
+        println!("Properties from struct");
+        os.properties.print_available()
     }
 
     write_region(

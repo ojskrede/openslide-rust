@@ -7,7 +7,9 @@ use std::{f32, u32};
 #[derive(Clone, Debug, Default)]
 pub struct Aperio {
     pub filename: Option<String>,
+    pub title: Option<String>,
     pub image_id: Option<String>,
+    pub dsr_id: Option<String>,
     pub scan_scope_id: Option<String>,
     pub date: Option<String>,
     pub time: Option<String>,
@@ -37,7 +39,9 @@ impl Aperio {
     pub fn parse_property_name(&mut self, name: &str, value: &str) {
         match name {
             "aperio.Filename" => self.filename = Some(String::from(value)),
+            "aperio.Title" => self.title = Some(String::from(value)),
             "aperio.ImageID" => self.image_id = Some(String::from(value)),
+            "aperio.DSR ID" => self.dsr_id = Some(String::from(value)),
             "aperio.ScanScope ID" => self.scan_scope_id = Some(String::from(value)),
             "aperio.Date" => self.date = Some(String::from(value)),
             "aperio.Time" => self.time = Some(String::from(value)),
@@ -90,8 +94,14 @@ impl Aperio {
         if let Some(ref val) = self.filename {
             println!("Filename: {}", val)
         }
+        if let Some(ref val) = self.title {
+            println!("Title: {}", val)
+        }
         if let Some(ref val) = self.image_id {
             println!("Image ID: {}", val)
+        }
+        if let Some(ref val) = self.dsr_id {
+            println!("DSR ID: {}", val)
         }
         if let Some(ref val) = self.scan_scope_id {
             println!("ScanScope ID: {}", val)

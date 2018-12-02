@@ -20,6 +20,12 @@ factor -> best level -> factor for level
 16.0 -> 1 -> 4
 16.1 -> 2 -> 16
 
+## [0.2.1] -
+### Fixed
+  - A bug introduced when adhering to clippy caused no properties to be parsed. This is fixed.
+### Removed
+  - The assets folder was accidentally included in the packaging. This is removed now.
+
 ## [0.2.0] - 2018.11.19
 ### Added
   - Integration tests for convenience api.

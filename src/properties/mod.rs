@@ -174,9 +174,19 @@ impl Properties {
         self.aperio_properties.filename.clone()
     }
 
+    /// Slide image title
+    pub fn title(&self) -> Option<String> {
+        self.aperio_properties.title.clone()
+    }
+
     /// Slide image id
     pub fn image_id(&self) -> Option<String> {
         self.aperio_properties.image_id.clone()
+    }
+
+    /// DSR id
+    pub fn dsr_id(&self) -> Option<String> {
+        self.aperio_properties.dsr_id.clone()
     }
 
     /// ScanScope id

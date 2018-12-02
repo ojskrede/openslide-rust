@@ -358,7 +358,6 @@ impl OpenSlide {
     pub fn get_properties(&self) -> Result<HashMap<String, String>, Error> {
         let mut properties = HashMap::<String, String>::new();
         for name in unsafe { bindings::get_property_names(self.osr)? } {
-            println!("{}", name);
             properties.insert(name.clone(), unsafe { bindings::get_property_value(self.osr, &name)? });
         }
         Ok(properties)

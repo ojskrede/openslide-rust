@@ -187,7 +187,7 @@ pub unsafe fn get_property_names(osr: *const OpenSlideT) -> Result<Vec<String>, 
         let null_terminated_array_ptr = openslide_get_property_names(osr);
         let mut counter = 0;
         let mut loc = null_terminated_array_ptr;
-        while (*loc).is_null() {
+        while !(*loc).is_null() {
             counter += 1;
             loc = loc.offset(1);
         }

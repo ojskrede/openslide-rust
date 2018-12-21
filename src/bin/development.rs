@@ -83,6 +83,7 @@ fn get_cli<'a>() -> ArgMatches<'a> {
 
 
 fn write_region(
+    fname: &str,
     os: &OpenSlide,
     out_dir: &Path,
     source_row: u32,
@@ -115,12 +116,17 @@ fn write_region(
     println!("Read region with height: {}", target_height);
     println!("Read region with width: {}", target_width);
     let im = os.read_region(source_row, source_col, zoom_lvl, target_height, target_width)?;
-    im.save(out_dir.join(format!("wsi_region_x{}_y{}_h{}_w{}_z{}.png",
+    /*
+    let out_fname = out_dir.join(format!("wsi_region_x{}_y{}_h{}_w{}_z{}.png",
                                  source_row,
                                  source_col,
                                  target_height,
                                  target_width,
-                                 zoom_lvl)))?;
+                                 zoom_lvl))
+    */
+    let out_fname = out_dir.join(format!("{}.png", fname));
+
+    im.save(&out_fname)?;
 
     Ok(())
 }
@@ -186,6 +192,7 @@ fn main() -> Result<(), Error> {
     }
 
     write_region(
+        &input_file.file_stem().unwrap().to_str().unwrap(),
         &os,
         &out_dir,
         source_row,

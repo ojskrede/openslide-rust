@@ -85,7 +85,8 @@ impl Aperio {
                 self.exposure_scale = Some(f32::from_str_radix(value, 10).unwrap())
             }
             "aperio.SessonMode" => self.sesson_mode = Some(String::from(value)),
-            _ => println!("Could not parse property name {} and value {}", name, value),
+            //_ => println!("Could not parse property name {} and value {}", name, value),
+            _ => {},
         }
     }
 

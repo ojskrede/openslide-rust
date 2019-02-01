@@ -27,7 +27,8 @@ impl Tiff {
             "tiff.XResolution" => self.x_resolution = Some(f32::from_str_radix(value, 10).unwrap()),
             "tiff.YResolution" => self.y_resolution = Some(f32::from_str_radix(value, 10).unwrap()),
             "tiff.ResolutionUnit" => self.resolution_unit = Some(String::from(value)),
-            _ => println!("Could not parse property name {} and value {}", name, value),
+            //_ => println!("Could not parse property name {} and value {}", name, value),
+            _ => {},
         }
     }
 

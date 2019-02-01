@@ -58,7 +58,8 @@ impl Properties {
                 Some("openslide") => openslide_properties.parse_property_name(key, value),
                 Some("tiff") => tiff_properties.parse_property_name(key, value),
                 Some("aperio") => aperio_properties.parse_property_name(key, value),
-                _ => println!("Could not parse {}", key),
+                //_ => println!("Could not parse {}", key),
+                _ => {},
             }
         }
 

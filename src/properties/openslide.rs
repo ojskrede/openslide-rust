@@ -171,10 +171,11 @@ impl OpenSlide {
                                     vector[level].tile_width =
                                         Some(u32::from_str_radix(value, 10).unwrap())
                                 }
-                                _ => println!(
-                                    "Could not parse property with name {} and value {}",
-                                    name, value
-                                ),
+                                //_ => println!(
+                                //    "Could not parse property with name {} and value {}",
+                                //    name, value
+                                //),
+                                _ => {},
                             }
                         }
                         None => println!("hello"),

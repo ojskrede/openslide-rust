@@ -12,7 +12,7 @@ use image::RgbaImage;
 use num::zero;
 use num::{Integer, Num, ToPrimitive, Unsigned};
 
-use {bindings, properties, utils};
+use {bindings, predefined_properties::PredefinedProperties, utils};
 
 /// A convenient OpenSlide object with the ordinary OpenSlide functions as methods
 ///
@@ -21,7 +21,7 @@ use {bindings, properties, utils};
 #[derive(Clone)]
 pub struct OpenSlide {
     osr: *const bindings::OpenSlideT,
-    pub properties: properties::Properties,
+    pub predefined_properties: PredefinedProperties,
 }
 
 impl Drop for OpenSlide {
@@ -39,21 +39,27 @@ impl OpenSlide {
     /// of OpenSlide objects and reuse them when possible.
     pub fn new(filename: &Path) -> Result<OpenSlide, Error> {
         if !filename.exists() {
-            return Err(format_err!("Error: Nonexisting path: {}", filename.display()));
+            return Err(format_err!(
+                "Error: Nonexisting path: {}",
+                filename.display()
+            ));
         }
 
-        let osr = bindings::open(filename.to_str().ok_or(format_err!("Error: Path to &str"))?)?;
+        let osr = bindings::open(
+            filename
+                .to_str()
+                .ok_or(format_err!("Error: Path to &str"))?,
+        )?;
 
         let mut property_map = HashMap::<String, String>::new();
         for name in unsafe { bindings::get_property_names(osr)? } {
-            property_map.insert(name.clone(), unsafe { bindings::get_property_value(osr, &name)? });
+            property_map.insert(name.clone(), unsafe {
+                bindings::get_property_value(osr, &name)?
+            });
         }
-        let properties = properties::Properties::new(&property_map);
+        let predefined_properties = PredefinedProperties::new(&property_map);
 
-        Ok(OpenSlide {
-            osr,
-            properties,
-        })
+        Ok(OpenSlide { osr, predefined_properties })
     }
 
     /// Get the number of levels in the whole slide image.
@@ -128,9 +134,11 @@ impl OpenSlide {
         level: T,
     ) -> Result<(u64, u64), Error> {
         self.assert_level_validity(level)?;
-        let level = level.to_i32().ok_or(format_err!("Conversion to primitive error"))?;
+        let level = level
+            .to_i32()
+            .ok_or(format_err!("Conversion to primitive error"))?;
 
-        let (width, height) = unsafe { bindings::get_level_dimensions(self.osr, level)?};
+        let (width, height) = unsafe { bindings::get_level_dimensions(self.osr, level)? };
 
         if width < -1 {
             return Err(format_err!(
@@ -166,14 +174,14 @@ impl OpenSlide {
     }
 
     /// Get the downsampling factor of a given level.
-    pub fn get_level_downsample<
-        T: Integer + ToPrimitive + Debug + Display + Clone + Copy,
-    >(
+    pub fn get_level_downsample<T: Integer + ToPrimitive + Debug + Display + Clone + Copy>(
         &self,
         level: T,
     ) -> Result<f64, Error> {
         self.assert_level_validity(level)?;
-        let level = level.to_i32().ok_or(format_err!("Conversion to primitive error"))?;
+        let level = level
+            .to_i32()
+            .ok_or(format_err!("Conversion to primitive error"))?;
         let downsample_factor = unsafe { bindings::get_level_downsample(self.osr, level)? };
 
         if downsample_factor < 0.0 {
@@ -182,7 +190,8 @@ impl OpenSlide {
                  OpenSlide returned a downsample factor {}, this is an error from \
                  OpenSlide. OpenSlide returns -1.0 if an error occured. \
                  See OpenSlide C API documentation.",
-                level, downsample_factor
+                level,
+                downsample_factor
             ));
         }
 
@@ -269,18 +278,20 @@ impl OpenSlide {
             .ok_or(format_err!("Conversion to primitive error"))?
             .min(max_width - tl_col_this_lvl.round() as u64);
 
-        if new_height < height
-            .to_u64()
-            .ok_or(format_err!("Conversion to primitive error"))?
+        if new_height
+            < height
+                .to_u64()
+                .ok_or(format_err!("Conversion to primitive error"))?
         {
             println!(
                 "WARNING: Requested region height is changed from {} to {} in order to fit",
                 height, new_height
             );
         }
-        if new_width < width
-            .to_u64()
-            .ok_or(format_err!("conversion to primitive error"))?
+        if new_width
+            < width
+                .to_u64()
+                .ok_or(format_err!("conversion to primitive error"))?
         {
             println!(
                 "WARNING: Requested region width is changed from {} to {} in order to fit",
@@ -289,11 +300,19 @@ impl OpenSlide {
         }
 
         if new_height > max_height {
-            return Err(format_err!("Requested height {} exceeds maximum {}", height, max_height));
+            return Err(format_err!(
+                "Requested height {} exceeds maximum {}",
+                height,
+                max_height
+            ));
         }
 
         if new_width > max_width {
-            return Err(format_err!("Requested width {} exceeds maximum {}", width, max_width));
+            return Err(format_err!(
+                "Requested width {} exceeds maximum {}",
+                width,
+                max_width
+            ));
         }
 
         Ok((new_height, new_width))
@@ -358,20 +377,24 @@ impl OpenSlide {
     pub fn get_properties(&self) -> Result<HashMap<String, String>, Error> {
         let mut properties = HashMap::<String, String>::new();
         for name in unsafe { bindings::get_property_names(self.osr)? } {
-            properties.insert(name.clone(), unsafe { bindings::get_property_value(self.osr, &name)? });
+            properties.insert(name.clone(), unsafe {
+                bindings::get_property_value(self.osr, &name)?
+            });
         }
         Ok(properties)
     }
 
-
     /// Check if the given level is valid
     fn assert_level_validity<T: Integer + ToPrimitive>(&self, level: T) -> Result<(), Error> {
         let max_num_levels = self.get_level_count()?;
-        let level = level.to_u32().ok_or(format_err!("Conversion to primitive error"))?;
+        let level = level
+            .to_u32()
+            .ok_or(format_err!("Conversion to primitive error"))?;
         if level >= max_num_levels {
             return Err(format_err!(
                 "Error: Specified level {} is larger than the max slide level {}",
-                level, max_num_levels - 1,
+                level,
+                max_num_levels - 1,
             ));
         }
         Ok(())

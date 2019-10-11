@@ -4,14 +4,11 @@
 extern crate failure;
 extern crate openslide;
 
+use failure::Error;
 use openslide::{bindings, utils};
 use std::path::Path;
-use failure::Error;
 
-fn basic_usage(
-    filename: &str
-) -> Result<(), Error> {
-
+fn basic_usage(filename: &str) -> Result<(), Error> {
     let vendor = bindings::detect_vendor(filename)?;
     println!("Vendor: {}", vendor);
 
@@ -25,14 +22,23 @@ fn basic_usage(
 
     let level = 0;
     let (height, width) = bindings::get_level_dimensions(osr, level)?;
-    println!("Slide has dimension {} x {} at level {}", height, width, level);
+    println!(
+        "Slide has dimension {} x {} at level {}",
+        height, width, level
+    );
 
     let factor = bindings::get_level_downsample(osr, level)?;
-    println!("Slide at level {} is downsampled with factor {}", level, factor);
+    println!(
+        "Slide at level {} is downsampled with factor {}",
+        level, factor
+    );
 
     let downsample_factor = 5.6;
     let level = bindings::get_best_level_for_downsample(osr, downsample_factor)?;
-    println!("Best level for downsample factor {} is {}", downsample_factor, level);
+    println!(
+        "Best level for downsample factor {} is {}",
+        downsample_factor, level
+    );
 
     let x = 1000;
     let y = 1500;
@@ -54,15 +60,17 @@ fn basic_usage(
     Ok(())
 }
 
-fn properties(
-    filename: &str
-) -> Result<(), Error> {
+fn properties(filename: &str) -> Result<(), Error> {
     let osr = bindings::open(filename)?;
 
     println!("Slide in {} has the following properties:", filename);
     println!("{0:<40} {1}", "Property key", "Property value");
     for name in bindings::get_property_names(osr)? {
-        println!("{0:<40} {1}", name, bindings::get_property_value(osr, &name)?);
+        println!(
+            "{0:<40} {1}",
+            name,
+            bindings::get_property_value(osr, &name)?
+        );
     }
 
     bindings::close(osr);
@@ -78,7 +86,7 @@ fn main() {
         Err(msg) => {
             println!("Basic usage functions not working");
             println!("{}", msg);
-        },
+        }
     }
 
     match properties(filename) {
@@ -86,7 +94,7 @@ fn main() {
         Err(msg) => {
             println!("Property functions not working");
             println!("{}", msg);
-        },
+        }
     }
 
     println!("Example program is terminated");

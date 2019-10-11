@@ -94,9 +94,10 @@ pub fn decode_buffer<T: Unsigned + Integer + ToPrimitive + Debug + Display + Clo
     );
 
     for (col, row, pixel) in rgba_image.enumerate_pixels_mut() {
-        let curr_pos = row * width
-            .to_u32()
-            .ok_or(format_err!("Conversion to primitive error"))?
+        let curr_pos = row
+            * width
+                .to_u32()
+                .ok_or(format_err!("Conversion to primitive error"))?
             + col;
         let value = buffer[curr_pos as usize];
 

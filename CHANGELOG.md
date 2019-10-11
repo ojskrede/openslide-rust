@@ -20,11 +20,17 @@ factor -> best level -> factor for level
 16.0 -> 1 -> 4
 16.1 -> 2 -> 16
 
-## [0.2.1] -
+## [0.3.0] -
+
 ### Fixed
   - A bug introduced when adhering to clippy caused no properties to be parsed. This is fixed.
 ### Removed
   - The assets folder was accidentally included in the packaging. This is removed now.
+  - Own property struct for the various vendors. This was too ambisious as these
+    properties are not standard. The openslide standards are kept, and are in line with
+    the ones the c api of openslide provides
+    (https://openslide.org/api/openslide_8h.html). Vendor specific properties are still
+    available in a dictionary.
 
 ## [0.2.0] - 2018.11.19
 ### Added

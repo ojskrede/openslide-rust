@@ -135,10 +135,9 @@ pub use bindings::{OpenSlideT,
 };
 */
 
-pub use convenience::{OpenSlide,
-};
+pub use convenience::OpenSlide;
 
 pub mod bindings;
-pub mod utils;
 mod convenience;
-pub mod properties;
+pub mod predefined_properties;
+pub mod utils;

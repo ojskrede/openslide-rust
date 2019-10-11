@@ -84,44 +84,6 @@ impl OpenSlide {
     /// This needs a property map in order to compute the number of levels. This is needed because
     /// of the properties that are listed as `openslide.level[<level>].<property>`.
     pub fn new(property_map: &HashMap<String, String>) -> Self {
-        let computed_level_count = find_max_level(property_map);
-        let level_count = match property_map.get("openslide.level-count") {
-            Some(val) => {
-                let level_count = match u32::from_str_radix(val, 10) {
-                    Ok(val) => Some(val),
-                    Err(_) => None,
-                };
-                if level_count != computed_level_count {
-                    println!("WARNING: Computed level count is different from stated property");
-                }
-                level_count
-            }
-            None => computed_level_count,
-        };
-
-        // Fill levels with default level properties so that it can be filled afterwards in
-        // arbitrary order
-        let levels = match level_count {
-            Some(num_levels) => {
-                let mut level_vec = Vec::<LevelProperties>::new();
-                for _ in 0..num_levels {
-                    level_vec.push(LevelProperties::default());
-                }
-                Some(level_vec)
-            }
-            None => None,
-        };
-
-        OpenSlide {
-            vendor: None,
-            quickhash_1: None,
-            mpp_x: None,
-            mpp_y: None,
-            objective_power: None,
-            comment: None,
-            level_count,
-            levels,
-        }
     }
 
     pub fn parse_property_name(&mut self, name: &str, value: &str) {

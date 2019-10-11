@@ -1,8 +1,8 @@
 //! Properties from various slides
 //!
 
-use std::collections::HashMap;
 use num::Num;
+use std::collections::HashMap;
 use std::f32;
 use std::u32;
 
@@ -109,9 +109,15 @@ impl PredefinedProperties {
     /// This needs a property map in order to compute the number of levels. This is needed because
     /// of the properties that are listed as `openslide.level[<level>].<property>`.
     pub fn new(property_map: &HashMap<String, String>) -> Self {
-        let comment = property_map.get("openslide.comment").map(|v| String::from(v));
-        let vendor = property_map.get("openslide.vendor").map(|v| String::from(v));
-        let quickhash_1 = property_map.get("openslide.quickhash-1").map(|v| String::from(v));
+        let comment = property_map
+            .get("openslide.comment")
+            .map(|v| String::from(v));
+        let vendor = property_map
+            .get("openslide.vendor")
+            .map(|v| String::from(v));
+        let quickhash_1 = property_map
+            .get("openslide.quickhash-1")
+            .map(|v| String::from(v));
         //FIXME let background_color = property_map.get("openslide.background-color").map(|v| String::from(v));
         let objective_power = match property_map.get("openslide.objective-power") {
             Some(v) => {
@@ -123,8 +129,8 @@ impl PredefinedProperties {
                         None
                     }
                 }
-            },
-            None => None
+            }
+            None => None,
         };
         let mpp_x = match property_map.get("openslide.mpp-x") {
             Some(v) => {
@@ -136,8 +142,8 @@ impl PredefinedProperties {
                         None
                     }
                 }
-            },
-            None => None
+            }
+            None => None,
         };
         let mpp_y = match property_map.get("openslide.mpp-y") {
             Some(v) => {
@@ -149,8 +155,8 @@ impl PredefinedProperties {
                         None
                     }
                 }
-            },
-            None => None
+            }
+            None => None,
         };
         // FIXME let bounds_x = property_map.get("openslide.bounds-x");
         // FIXME let bounds_y = property_map.get("openslide.bounds-y");
@@ -168,8 +174,8 @@ impl PredefinedProperties {
                         None
                     }
                 }
-            },
-            None => None
+            }
+            None => None,
         };
         let computed_level_count = find_max_level(property_map);
         if level_count != computed_level_count {
@@ -179,14 +185,12 @@ impl PredefinedProperties {
 
         // Fill levels with default level properties so that it can be filled afterwards in
         // arbitrary order
-        let mut levels = level_count.map(|n|
-            vec![LevelProperties::default(); n as usize]
-        );
+        let mut levels = level_count.map(|n| vec![LevelProperties::default(); n as usize]);
 
         // Fill levels with actual values
         for (name, value) in property_map {
             if name.contains("openslide.level[") {
-                 let level = {
+                let level = {
                     let starts_with_number = name.split("level[").last().unwrap();
                     let number_as_string = starts_with_number.split("]").nth(0).unwrap();
                     u32::from_str_radix(number_as_string, 10).unwrap() as usize
@@ -202,49 +206,43 @@ impl PredefinedProperties {
                             "downsample" => {
                                 vec[level].downsample = match f32::from_str_radix(value, 10) {
                                     Ok(x) => Some(x),
-                                    Err(_) => None
+                                    Err(_) => None,
                                 }
                             }
                             "height" => {
                                 vec[level].height = match u32::from_str_radix(value, 10) {
                                     Ok(x) => Some(x),
-                                    Err(_) => None
+                                    Err(_) => None,
                                 }
                             }
                             "width" => {
                                 vec[level].width = match u32::from_str_radix(value, 10) {
                                     Ok(x) => Some(x),
-                                    Err(_) => None
+                                    Err(_) => None,
                                 }
                             }
                             "tile-height" => {
                                 vec[level].tile_height = match u32::from_str_radix(value, 10) {
                                     Ok(x) => Some(x),
-                                    Err(_) => None
+                                    Err(_) => None,
                                 }
                             }
                             "tile-width" => {
                                 vec[level].tile_width = match u32::from_str_radix(value, 10) {
                                     Ok(x) => Some(x),
-                                    Err(_) => None
+                                    Err(_) => None,
                                 }
                             }
-                            //_ => println!(
-                            //    "Could not parse property with name {} and value {}",
-                            //    name, value
-                            //),
-                            _ => {},
+                            _ => println!(
+                                "Could not parse property with name {} and value {}",
+                                name, value
+                            ),
                         }
                     }
                     // Since we have already established that we have n levels via the existence of
                     // "openlide.leve[{}]" in the find_max_level() function
                     None => unreachable!(),
                 }
-            } else {
-                println!(
-                    "Could not parse property with name {} and value {}",
-                    name, value
-                );
             }
         }
 

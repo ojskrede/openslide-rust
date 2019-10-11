@@ -122,7 +122,10 @@ pub unsafe fn get_level0_dimensions(osr: *const OpenSlideT) -> Result<(i64, i64)
 }
 
 /// Get the dimensions of a level.
-pub unsafe fn get_level_dimensions(osr: *const OpenSlideT, level: i32) -> Result<(i64, i64), Error> {
+pub unsafe fn get_level_dimensions(
+    osr: *const OpenSlideT,
+    level: i32,
+) -> Result<(i64, i64), Error> {
     let mut width: libc::int64_t = 0;
     let mut height: libc::int64_t = 0;
     openslide_get_level_dimensions(osr, level, &mut width, &mut height); // This is unsafe

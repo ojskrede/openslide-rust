@@ -216,7 +216,7 @@ fn main() -> Result<(), Error> {
             println!("{0:<40} {1}", key, val);
         }
         println!("Properties from struct");
-        os.properties.print_available()
+        os.predefined_properties.print_available()
     }
 
     write_region(

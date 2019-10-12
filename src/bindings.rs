@@ -6,7 +6,7 @@
 //! For a more rust convenient api, use the OpenSlide struct.
 //!
 
-use failure::Error;
+use failure::{format_err, Error};
 use libc;
 use std::{self, ffi, str};
 
@@ -65,9 +65,7 @@ extern "C" {
     // Error handling
     // ---------------
 
-    // fn openslide_get_error(
-    //     osr: *const OpenSlideT
-    // ) -> *const libc::c_char;
+    fn openslide_get_error(osr: *const OpenSlideT) -> *const libc::c_char;
 
     // ---------------
     // Properties
@@ -85,6 +83,25 @@ extern "C" {
 // Basic usage
 // ---------------
 
+// NOTE about error handling
+//
+// From https://github.com/openslide/openslide/blob/master/src/openslide.h about the function
+//
+// const char *openslide_get_error(openslide_t *osr);
+//
+// > For a given OpenSlide object, once this function returns a non-NULL
+// > value, the only useful operation on the object is to call
+// > openslide_close() to free its resources.
+//
+// That is:
+//
+// openslide_close(osr);
+//
+// After each call we check the status of the C OpenSlide object with the above function. If it is
+// not NULL, we return immediately with and error. This then calls the Drop trait implemented for
+// the OpenSlide object, which involves calling openslide_close().
+//
+
 /// Quickly determine whether a whole slide image is recognized.
 pub fn detect_vendor(filename: &str) -> Result<String, Error> {
     let c_filename = ffi::CString::new(filename)?;
@@ -98,12 +115,23 @@ pub fn detect_vendor(filename: &str) -> Result<String, Error> {
 /// Open a whole slide image.
 pub fn open(filename: &str) -> Result<*const OpenSlideT, Error> {
     let c_filename = ffi::CString::new(filename)?;
-    let slide = unsafe { openslide_open(c_filename.as_ptr()) };
-    Ok(slide)
+    let osr = unsafe { openslide_open(c_filename.as_ptr()) };
+    unsafe {
+        let error_state = openslide_get_error(osr);
+        if !error_state.is_null() {
+            let err = ffi::CStr::from_ptr(error_state).to_string_lossy();
+            return Err(format_err!(
+                "In function open: Non-NULL error state from openslide:\n\n{:?}\n\n",
+                err
+            ));
+        }
+    }
+    Ok(osr)
 }
 
 /// Close an OpenSlide object.
 pub fn close(osr: *const OpenSlideT) {
+    dbg!("Calling close");
     unsafe {
         openslide_close(osr);
     }
@@ -112,6 +140,16 @@ pub fn close(osr: *const OpenSlideT) {
 /// Get the number of levels in the whole slide image.
 pub fn get_level_count(osr: *const OpenSlideT) -> Result<i32, Error> {
     let num_levels = unsafe { openslide_get_level_count(osr) };
+    unsafe {
+        let error_state = openslide_get_error(osr);
+        if !error_state.is_null() {
+            let err = ffi::CStr::from_ptr(error_state).to_string_lossy();
+            return Err(format_err!(
+                "In function get_level_count: Non-NULL error state from openslide:\n\n{:?}\n\n",
+                err
+            ));
+        }
+    }
     Ok(num_levels)
 }
 
@@ -121,6 +159,17 @@ pub fn get_level0_dimensions(osr: *const OpenSlideT) -> Result<(i64, i64), Error
     let mut height: libc::int64_t = 0;
     unsafe {
         openslide_get_level0_dimensions(osr, &mut width, &mut height);
+    }
+    unsafe {
+        let error_state = openslide_get_error(osr);
+        if !error_state.is_null() {
+            let err = ffi::CStr::from_ptr(error_state).to_string_lossy();
+            return Err(format_err!(
+                "In function get_level0_dimensions: Non-NULL error state from openslide:\n\n{:?}\n\n",
+                err
+                )
+            );
+        }
     }
     Ok((width, height))
 }
@@ -132,12 +181,34 @@ pub fn get_level_dimensions(osr: *const OpenSlideT, level: i32) -> Result<(i64, 
     unsafe {
         openslide_get_level_dimensions(osr, level, &mut width, &mut height);
     }
+    unsafe {
+        let error_state = openslide_get_error(osr);
+        if !error_state.is_null() {
+            let err = ffi::CStr::from_ptr(error_state).to_string_lossy();
+            return Err(format_err!(
+                "In function get_level_dimensions: Non-NULL error state from openslide:\n\n{:?}\n\n",
+                err
+                )
+            );
+        }
+    }
     Ok((width, height))
 }
 
 /// Get the downsampling factor of a given level.
 pub fn get_level_downsample(osr: *const OpenSlideT, level: i32) -> Result<f64, Error> {
     let downsampling_factor = unsafe { openslide_get_level_downsample(osr, level) };
+    unsafe {
+        let error_state = openslide_get_error(osr);
+        if !error_state.is_null() {
+            let err = ffi::CStr::from_ptr(error_state).to_string_lossy();
+            return Err(format_err!(
+                "In function get_level_downsample: Non-NULL error state from openslide:\n\n{:?}\n\n",
+                err
+                )
+            );
+        }
+    }
     Ok(downsampling_factor)
 }
 
@@ -147,6 +218,17 @@ pub fn get_best_level_for_downsample(
     downsample: f64,
 ) -> Result<i32, Error> {
     let level = unsafe { openslide_get_best_level_for_downsample(osr, downsample) };
+    unsafe {
+        let error_state = openslide_get_error(osr);
+        if !error_state.is_null() {
+            let err = ffi::CStr::from_ptr(error_state).to_string_lossy();
+            return Err(format_err!(
+                "In function get_best_level_for_downsample: Non-NULL error state from openslide:\n\n{:?}\n\n",
+                err
+                )
+            );
+        }
+    }
     Ok(level)
 }
 
@@ -163,27 +245,22 @@ pub fn read_region(
     let p_buffer = buffer.as_mut_ptr();
     unsafe {
         openslide_read_region(osr, p_buffer, x, y, level, w, h);
+    }
+    unsafe {
+        let error_state = openslide_get_error(osr);
+        if !error_state.is_null() {
+            let err = ffi::CStr::from_ptr(error_state).to_string_lossy();
+            return Err(format_err!(
+                "In function read_region: Non-NULL error state from openslide:\n\n{:?}\n\n",
+                err
+            ));
+        }
+    }
+    unsafe {
         buffer.set_len((h * w) as usize);
     }
     Ok(buffer)
 }
-
-// ---------------
-// Error handling
-// ---------------
-
-/* FIXME Keep commented as long as it is not working. Gets segmentation fault core dumped
-/// Get the current error string.
-pub fn get_error(
-    osr: *const OpenSlideT
-) -> Result<String, Error> {
-    let msg = unsafe {
-        let c_msg = openslide_get_error(osr);
-        ffi::CStr::from_ptr(c_msg).to_string_lossy().into_owned()
-    };
-    Ok(msg)
-}
-*/
 
 // ---------------
 // Properties
@@ -193,6 +270,17 @@ pub fn get_error(
 pub fn get_property_names(osr: *const OpenSlideT) -> Result<Vec<String>, Error> {
     let string_values = {
         let null_terminated_array_ptr = unsafe { openslide_get_property_names(osr) };
+        unsafe {
+            let error_state = openslide_get_error(osr);
+            if !error_state.is_null() {
+                let err = ffi::CStr::from_ptr(error_state).to_string_lossy();
+                return Err(format_err!(
+                    "In function get_property_names: Non-NULL error state from openslide:\n\n{:?}\n\n",
+                    err
+                    )
+                );
+            }
+        }
         let mut counter = 0;
         let mut loc = null_terminated_array_ptr;
         unsafe {
@@ -223,5 +311,15 @@ pub fn get_property_value(osr: *const OpenSlideT, name: &str) -> Result<String, 
         let c_value = openslide_get_property_value(osr, c_name.as_ptr());
         ffi::CStr::from_ptr(c_value).to_string_lossy().into_owned()
     };
+    unsafe {
+        let error_state = openslide_get_error(osr);
+        if !error_state.is_null() {
+            let err = ffi::CStr::from_ptr(error_state).to_string_lossy();
+            return Err(format_err!(
+                "In function get_property_value: Non-NULL error state from openslide:\n\n{:?}\n\n",
+                err
+            ));
+        }
+    }
     Ok(value)
 }

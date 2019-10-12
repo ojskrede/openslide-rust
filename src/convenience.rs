@@ -20,7 +20,7 @@ use {bindings, predefined_properties::PredefinedProperties, utils};
 /// API for rust. It also contains some other convenience methods.
 #[derive(Clone)]
 pub struct OpenSlide {
-    osr: *const bindings::OpenSlideT,
+    osr: *const bindings::OpenSlideType,
     pub predefined_properties: PredefinedProperties,
 }
 

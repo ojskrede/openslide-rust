@@ -99,8 +99,7 @@ fn properties(filename: &str) -> Result<(), Error> {
 }
 
 fn main() {
-    //let filename = "assets/CMU-1-Small-Region.svs";
-    let filename = "/storage/oskrede/data/P60-0272/P60-0272_91_04646-1APERIO_HE1_40_NOMARKING.svs";
+    let filename = "assets/CMU-1-Small-Region.svs";
     println!("Analyzing {}", filename);
 
     match basic_usage(filename) {
@@ -111,13 +110,13 @@ fn main() {
         }
     }
 
-    // match properties(filename) {
-    //     Ok(_) => println!("Property functions are working okay"),
-    //     Err(msg) => {
-    //         println!("Property functions not working");
-    //         println!("{}", msg);
-    //     }
-    // }
+    match properties(filename) {
+        Ok(_) => println!("Property functions are working okay"),
+        Err(msg) => {
+            println!("Property functions not working");
+            println!("{}", msg);
+        }
+    }
 
     println!("Example program is terminated");
 }

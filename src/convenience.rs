@@ -20,14 +20,20 @@ use {bindings, predefined_properties::PredefinedProperties, utils};
 /// API for rust. It also contains some other convenience methods.
 #[derive(Clone)]
 pub struct OpenSlide {
-    osr: *const bindings::OpenSlideT,
+    osr: *const bindings::OpenSlideType,
     pub predefined_properties: PredefinedProperties,
 }
 
 impl Drop for OpenSlide {
     /// This method is called when the object in dropped, and tries to close the slide.
     fn drop(&mut self) {
-        unsafe { bindings::close(self.osr) };
+        // As recommended in the openslide library, we close the slide immediately after it is in
+        // an non-null error state. If this is the case, this would result in a double free if
+        // tried to close it here also. For this reason, it is only closed if the slide is not in
+        // an error state.
+        if bindings::get_error(self.osr).is_none() {
+            bindings::close(self.osr);
+        }
     }
 }
 
@@ -52,19 +58,20 @@ impl OpenSlide {
         )?;
 
         let mut property_map = HashMap::<String, String>::new();
-        for name in unsafe { bindings::get_property_names(osr)? } {
-            property_map.insert(name.clone(), unsafe {
-                bindings::get_property_value(osr, &name)?
-            });
+        for name in bindings::get_property_names(osr)? {
+            property_map.insert(name.clone(), bindings::get_property_value(osr, &name)?);
         }
         let predefined_properties = PredefinedProperties::new(&property_map);
 
-        Ok(OpenSlide { osr, predefined_properties })
+        Ok(OpenSlide {
+            osr,
+            predefined_properties,
+        })
     }
 
     /// Get the number of levels in the whole slide image.
     pub fn get_level_count(&self) -> Result<u32, Error> {
-        let num_levels = unsafe { bindings::get_level_count(self.osr)? };
+        let num_levels = bindings::get_level_count(self.osr)?;
 
         if num_levels < -1 {
             Err(format_err!(
@@ -90,7 +97,7 @@ impl OpenSlide {
     ///
     /// This is the same as calling get_level_dimensions(level) with level=0.
     pub fn get_level0_dimensions(&self) -> Result<(u64, u64), Error> {
-        let (width, height) = unsafe { bindings::get_level0_dimensions(self.osr)? };
+        let (width, height) = bindings::get_level0_dimensions(self.osr)?;
 
         if width < -1 {
             return Err(format_err!(
@@ -138,7 +145,7 @@ impl OpenSlide {
             .to_i32()
             .ok_or(format_err!("Conversion to primitive error"))?;
 
-        let (width, height) = unsafe { bindings::get_level_dimensions(self.osr, level)? };
+        let (width, height) = bindings::get_level_dimensions(self.osr, level)?;
 
         if width < -1 {
             return Err(format_err!(
@@ -182,7 +189,7 @@ impl OpenSlide {
         let level = level
             .to_i32()
             .ok_or(format_err!("Conversion to primitive error"))?;
-        let downsample_factor = unsafe { bindings::get_level_downsample(self.osr, level)? };
+        let downsample_factor = bindings::get_level_downsample(self.osr, level)?;
 
         if downsample_factor < 0.0 {
             return Err(format_err!(
@@ -213,14 +220,12 @@ impl OpenSlide {
             ));
         }
 
-        let level = unsafe {
-            bindings::get_best_level_for_downsample(
-                self.osr,
-                downsample_factor
-                    .to_f64()
-                    .ok_or(format_err!("Conversion to primitive error"))?,
-            )?
-        };
+        let level = bindings::get_best_level_for_downsample(
+            self.osr,
+            downsample_factor
+                .to_f64()
+                .ok_or(format_err!("Conversion to primitive error"))?,
+        )?;
 
         if level < -1 {
             Err(format_err!(
@@ -345,26 +350,24 @@ impl OpenSlide {
             width,
         )?;
 
-        let buffer = unsafe {
-            bindings::read_region(
-                self.osr,
-                top_left_lvl0_col
-                    .to_i64()
-                    .ok_or(format_err!("Conversion to primitive error"))?,
-                top_left_lvl0_row
-                    .to_i64()
-                    .ok_or(format_err!("Conversion to primitive error"))?,
-                level
-                    .to_i32()
-                    .ok_or(format_err!("Conversion to primitive error"))?,
-                width
-                    .to_i64()
-                    .ok_or(format_err!("Conversion to primitive error"))?,
-                height
-                    .to_i64()
-                    .ok_or(format_err!("Conversion to primitive error"))?,
-            )?
-        };
+        let buffer = bindings::read_region(
+            self.osr,
+            top_left_lvl0_col
+                .to_i64()
+                .ok_or(format_err!("Conversion to primitive error"))?,
+            top_left_lvl0_row
+                .to_i64()
+                .ok_or(format_err!("Conversion to primitive error"))?,
+            level
+                .to_i32()
+                .ok_or(format_err!("Conversion to primitive error"))?,
+            width
+                .to_i64()
+                .ok_or(format_err!("Conversion to primitive error"))?,
+            height
+                .to_i64()
+                .ok_or(format_err!("Conversion to primitive error"))?,
+        )?;
         let word_repr = utils::WordRepresentation::BigEndian;
         utils::decode_buffer(&buffer, height, width, word_repr)
     }
@@ -376,10 +379,8 @@ impl OpenSlide {
     /// associated with the slide.
     pub fn get_properties(&self) -> Result<HashMap<String, String>, Error> {
         let mut properties = HashMap::<String, String>::new();
-        for name in unsafe { bindings::get_property_names(self.osr)? } {
-            properties.insert(name.clone(), unsafe {
-                bindings::get_property_value(self.osr, &name)?
-            });
+        for name in bindings::get_property_names(self.osr)? {
+            properties.insert(name.clone(), bindings::get_property_value(self.osr, &name)?);
         }
         Ok(properties)
     }

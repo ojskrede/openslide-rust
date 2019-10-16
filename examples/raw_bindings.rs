@@ -1,5 +1,26 @@
 //! Example of how to use the raw bindings
 //!
+//! NOTE how we explicitly have to call
+//!
+//! ```
+//! bindings::close(osr);
+//! ```
+//!
+//! when an error occurs, or when the scope ends. We detect the error inside all the openslide::*
+//! functions, and should ideally destruct the object there. But in the safe interface
+//! (convenience), the OpenSlide object implements Drop by closing the slide. If an error occurs
+//! there, and it is already closed, it will be a double free if the OpenSlide struct goes out of
+//! scope, which it will, even if the error occured.
+//!
+//! As I see it, there are three options
+//!
+//! 1: Do it as it is implemented now, leaving it ut to the user of the raw interface to remember
+//!    to close the osr object at appropriate times.
+//! 2: Do it as we do it now and hide / remove the raw interface from public
+//! 3: Close the slide straight after an error is occured and edit the Drop implementation. This
+//!    is probably the best option if I could figure out some way to detect if the slide has
+//!    already been freed (and then not free it again when calling Drop), or only drop it if an
+//!    error did not occur.
 
 extern crate failure;
 extern crate openslide;
@@ -40,11 +61,11 @@ fn basic_usage(filename: &str) -> Result<(), Error> {
         downsample_factor, level
     );
 
-    let x = 1000;
-    let y = 1500;
-    let level = 0;
-    let h = 512;
-    let w = 512;
+    let x = 0;
+    let y = 960;
+    let level = 1;
+    let h = 100;
+    let w = 100;
     let word_repr = utils::WordRepresentation::BigEndian;
     let buffer = bindings::read_region(osr, x, y, level, w, h)?;
     let im = utils::decode_buffer(&buffer, h as u32, w as u32, word_repr)?;

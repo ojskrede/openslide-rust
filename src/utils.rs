@@ -84,21 +84,16 @@ pub fn decode_buffer<T: Unsigned + Integer + ToPrimitive + Debug + Display + Clo
     width: T,
     word_representation: WordRepresentation,
 ) -> Result<RgbaImage, Error> {
-    let mut rgba_image = RgbaImage::new(
-        width
-            .to_u32()
-            .ok_or(format_err!("Conversion to primitive error"))?,
-        height
-            .to_u32()
-            .ok_or(format_err!("Conversion to primitive error"))?,
-    );
+    let height = height
+        .to_u32()
+        .ok_or(format_err!("Conversion to primitive error"))?;
+    let width = width
+        .to_u32()
+        .ok_or(format_err!("Conversion to primitive error"))?;
+    let mut rgba_image = RgbaImage::new(width, height);
 
     for (col, row, pixel) in rgba_image.enumerate_pixels_mut() {
-        let curr_pos = row
-            * width
-                .to_u32()
-                .ok_or(format_err!("Conversion to primitive error"))?
-            + col;
+        let curr_pos = row * width + col;
         let value = buffer[curr_pos as usize];
 
         let mut buf = [0; 4];

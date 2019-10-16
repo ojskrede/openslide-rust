@@ -122,15 +122,11 @@ pub fn detect_vendor(filename: &str) -> Result<String, Error> {
 pub fn open(filename: &str) -> Result<*const OpenSlideType, Error> {
     let c_filename = ffi::CString::new(filename)?;
     let osr = unsafe { openslide_open(c_filename.as_ptr()) };
-    unsafe {
-        let error_state = openslide_get_error(osr);
-        if !error_state.is_null() {
-            let err = ffi::CStr::from_ptr(error_state).to_string_lossy();
-            return Err(format_err!(
-                "In function open: Non-NULL error state from openslide:\n\n{:?}\n\n",
-                err
-            ));
-        }
+    if let Some(err) = get_error(osr) {
+        return Err(format_err!(
+            "In function open: Non-NULL error state from openslide:\n\n{}\n\n",
+            err
+        ));
     }
     Ok(osr)
 }
@@ -146,15 +142,11 @@ pub fn close(osr: *const OpenSlideType) {
 /// Get the number of levels in the whole slide image.
 pub fn get_level_count(osr: *const OpenSlideType) -> Result<i32, Error> {
     let num_levels = unsafe { openslide_get_level_count(osr) };
-    unsafe {
-        let error_state = openslide_get_error(osr);
-        if !error_state.is_null() {
-            let err = ffi::CStr::from_ptr(error_state).to_string_lossy();
-            return Err(format_err!(
-                "In function get_level_count: Non-NULL error state from openslide:\n\n{:?}\n\n",
-                err
-            ));
-        }
+    if let Some(err) = get_error(osr) {
+        return Err(format_err!(
+            "In function get_level_count: Non-NULL error state from openslide:\n\n{}\n\n",
+            err
+        ));
     }
     Ok(num_levels)
 }
@@ -166,16 +158,11 @@ pub fn get_level0_dimensions(osr: *const OpenSlideType) -> Result<(i64, i64), Er
     unsafe {
         openslide_get_level0_dimensions(osr, &mut width, &mut height);
     }
-    unsafe {
-        let error_state = openslide_get_error(osr);
-        if !error_state.is_null() {
-            let err = ffi::CStr::from_ptr(error_state).to_string_lossy();
-            return Err(format_err!(
-                "In function get_level0_dimensions: Non-NULL error state from openslide:\n\n{:?}\n\n",
-                err
-                )
-            );
-        }
+    if let Some(err) = get_error(osr) {
+        return Err(format_err!(
+            "In function get_level0_dimensions: Non-NULL error state from openslide:\n\n{}\n\n",
+            err
+        ));
     }
     Ok((width, height))
 }
@@ -187,16 +174,11 @@ pub fn get_level_dimensions(osr: *const OpenSlideType, level: i32) -> Result<(i6
     unsafe {
         openslide_get_level_dimensions(osr, level, &mut width, &mut height);
     }
-    unsafe {
-        let error_state = openslide_get_error(osr);
-        if !error_state.is_null() {
-            let err = ffi::CStr::from_ptr(error_state).to_string_lossy();
-            return Err(format_err!(
-                "In function get_level_dimensions: Non-NULL error state from openslide:\n\n{:?}\n\n",
-                err
-                )
-            );
-        }
+    if let Some(err) = get_error(osr) {
+        return Err(format_err!(
+            "In function get_level_dimensions: Non-NULL error state from openslide:\n\n{}\n\n",
+            err
+        ));
     }
     Ok((width, height))
 }
@@ -204,16 +186,11 @@ pub fn get_level_dimensions(osr: *const OpenSlideType, level: i32) -> Result<(i6
 /// Get the downsampling factor of a given level.
 pub fn get_level_downsample(osr: *const OpenSlideType, level: i32) -> Result<f64, Error> {
     let downsampling_factor = unsafe { openslide_get_level_downsample(osr, level) };
-    unsafe {
-        let error_state = openslide_get_error(osr);
-        if !error_state.is_null() {
-            let err = ffi::CStr::from_ptr(error_state).to_string_lossy();
-            return Err(format_err!(
-                "In function get_level_downsample: Non-NULL error state from openslide:\n\n{:?}\n\n",
-                err
-                )
-            );
-        }
+    if let Some(err) = get_error(osr) {
+        return Err(format_err!(
+            "In function get_level_downsample: Non-NULL error state from openslide:\n\n{}\n\n",
+            err
+        ));
     }
     Ok(downsampling_factor)
 }
@@ -224,16 +201,11 @@ pub fn get_best_level_for_downsample(
     downsample: f64,
 ) -> Result<i32, Error> {
     let level = unsafe { openslide_get_best_level_for_downsample(osr, downsample) };
-    unsafe {
-        let error_state = openslide_get_error(osr);
-        if !error_state.is_null() {
-            let err = ffi::CStr::from_ptr(error_state).to_string_lossy();
-            return Err(format_err!(
-                "In function get_best_level_for_downsample: Non-NULL error state from openslide:\n\n{:?}\n\n",
-                err
-                )
-            );
-        }
+    if let Some(err) = get_error(osr) {
+        return Err(format_err!(
+            "In function get_best_level_for_downsample: Non-NULL error state from openslide:\n\n{}\n\n",
+            err
+        ));
     }
     Ok(level)
 }
@@ -252,20 +224,33 @@ pub fn read_region(
     unsafe {
         openslide_read_region(osr, p_buffer, x, y, level, w, h);
     }
-    unsafe {
-        let error_state = openslide_get_error(osr);
-        if !error_state.is_null() {
-            let err = ffi::CStr::from_ptr(error_state).to_string_lossy();
-            return Err(format_err!(
-                "In function read_region: Non-NULL error state from openslide:\n\n{:?}\n\n",
-                err
-            ));
-        }
+    if let Some(err) = get_error(osr) {
+        return Err(format_err!(
+            "In function read_region: Non-NULL error state from openslide:\n\n{}\n\n",
+            err
+        ));
     }
     unsafe {
         buffer.set_len((h * w) as usize);
     }
     Ok(buffer)
+}
+
+// ---------------
+// Errors
+// ---------------
+
+/// Get error state of the slide. If it is null everything is ok and this function returns None. If
+/// else it returns Some(error message).
+pub fn get_error(osr: *const OpenSlideType) -> Option<String> {
+    let mut return_val: Option<String> = None;
+    unsafe {
+        let error_state = openslide_get_error(osr);
+        if !error_state.is_null() {
+            return_val = Some(ffi::CStr::from_ptr(error_state).to_string_lossy().into_owned());
+        }
+    }
+    return_val
 }
 
 // ---------------
@@ -276,16 +261,11 @@ pub fn read_region(
 pub fn get_property_names(osr: *const OpenSlideType) -> Result<Vec<String>, Error> {
     let string_values = {
         let null_terminated_array_ptr = unsafe { openslide_get_property_names(osr) };
-        unsafe {
-            let error_state = openslide_get_error(osr);
-            if !error_state.is_null() {
-                let err = ffi::CStr::from_ptr(error_state).to_string_lossy();
-                return Err(format_err!(
-                    "In function get_property_names: Non-NULL error state from openslide:\n\n{:?}\n\n",
-                    err
-                    )
-                );
-            }
+        if let Some(err) = get_error(osr) {
+            return Err(format_err!(
+                "In function get_property_names: Non-NULL error state from openslide:\n\n{}\n\n",
+                err
+            ));
         }
         let mut counter = 0;
         let mut loc = null_terminated_array_ptr;
@@ -317,15 +297,11 @@ pub fn get_property_value(osr: *const OpenSlideType, name: &str) -> Result<Strin
         let c_value = openslide_get_property_value(osr, c_name.as_ptr());
         ffi::CStr::from_ptr(c_value).to_string_lossy().into_owned()
     };
-    unsafe {
-        let error_state = openslide_get_error(osr);
-        if !error_state.is_null() {
-            let err = ffi::CStr::from_ptr(error_state).to_string_lossy();
-            return Err(format_err!(
-                "In function get_property_value: Non-NULL error state from openslide:\n\n{:?}\n\n",
-                err
-            ));
-        }
+    if let Some(err) = get_error(osr) {
+        return Err(format_err!(
+            "In function get_property_value: Non-NULL error state from openslide:\n\n{}\n\n",
+            err
+        ));
     }
     Ok(value)
 }

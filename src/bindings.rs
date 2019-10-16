@@ -123,6 +123,7 @@ pub fn open(filename: &str) -> Result<*const OpenSlideType, Error> {
     let c_filename = ffi::CString::new(filename)?;
     let osr = unsafe { openslide_open(c_filename.as_ptr()) };
     if let Some(err) = get_error(osr) {
+        close(osr);
         return Err(format_err!(
             "In function open: Non-NULL error state from openslide:\n\n{}\n\n",
             err
@@ -133,7 +134,6 @@ pub fn open(filename: &str) -> Result<*const OpenSlideType, Error> {
 
 /// Close an OpenSlide object.
 pub fn close(osr: *const OpenSlideType) {
-    dbg!("Calling close");
     unsafe {
         openslide_close(osr);
     }
@@ -143,6 +143,7 @@ pub fn close(osr: *const OpenSlideType) {
 pub fn get_level_count(osr: *const OpenSlideType) -> Result<i32, Error> {
     let num_levels = unsafe { openslide_get_level_count(osr) };
     if let Some(err) = get_error(osr) {
+        close(osr);
         return Err(format_err!(
             "In function get_level_count: Non-NULL error state from openslide:\n\n{}\n\n",
             err
@@ -159,6 +160,7 @@ pub fn get_level0_dimensions(osr: *const OpenSlideType) -> Result<(i64, i64), Er
         openslide_get_level0_dimensions(osr, &mut width, &mut height);
     }
     if let Some(err) = get_error(osr) {
+        close(osr);
         return Err(format_err!(
             "In function get_level0_dimensions: Non-NULL error state from openslide:\n\n{}\n\n",
             err
@@ -175,6 +177,7 @@ pub fn get_level_dimensions(osr: *const OpenSlideType, level: i32) -> Result<(i6
         openslide_get_level_dimensions(osr, level, &mut width, &mut height);
     }
     if let Some(err) = get_error(osr) {
+        close(osr);
         return Err(format_err!(
             "In function get_level_dimensions: Non-NULL error state from openslide:\n\n{}\n\n",
             err
@@ -187,6 +190,7 @@ pub fn get_level_dimensions(osr: *const OpenSlideType, level: i32) -> Result<(i6
 pub fn get_level_downsample(osr: *const OpenSlideType, level: i32) -> Result<f64, Error> {
     let downsampling_factor = unsafe { openslide_get_level_downsample(osr, level) };
     if let Some(err) = get_error(osr) {
+        close(osr);
         return Err(format_err!(
             "In function get_level_downsample: Non-NULL error state from openslide:\n\n{}\n\n",
             err
@@ -202,6 +206,7 @@ pub fn get_best_level_for_downsample(
 ) -> Result<i32, Error> {
     let level = unsafe { openslide_get_best_level_for_downsample(osr, downsample) };
     if let Some(err) = get_error(osr) {
+        close(osr);
         return Err(format_err!(
             "In function get_best_level_for_downsample: Non-NULL error state from openslide:\n\n{}\n\n",
             err
@@ -225,6 +230,7 @@ pub fn read_region(
         openslide_read_region(osr, p_buffer, x, y, level, w, h);
     }
     if let Some(err) = get_error(osr) {
+        close(osr);
         return Err(format_err!(
             "In function read_region: Non-NULL error state from openslide:\n\n{}\n\n",
             err
@@ -262,6 +268,7 @@ pub fn get_property_names(osr: *const OpenSlideType) -> Result<Vec<String>, Erro
     let string_values = {
         let null_terminated_array_ptr = unsafe { openslide_get_property_names(osr) };
         if let Some(err) = get_error(osr) {
+            close(osr);
             return Err(format_err!(
                 "In function get_property_names: Non-NULL error state from openslide:\n\n{}\n\n",
                 err
@@ -298,6 +305,7 @@ pub fn get_property_value(osr: *const OpenSlideType, name: &str) -> Result<Strin
         ffi::CStr::from_ptr(c_value).to_string_lossy().into_owned()
     };
     if let Some(err) = get_error(osr) {
+        close(osr);
         return Err(format_err!(
             "In function get_property_value: Non-NULL error state from openslide:\n\n{}\n\n",
             err

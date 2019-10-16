@@ -27,7 +27,13 @@ pub struct OpenSlide {
 impl Drop for OpenSlide {
     /// This method is called when the object in dropped, and tries to close the slide.
     fn drop(&mut self) {
-        bindings::close(self.osr);
+        // As recommended in the openslide library, we close the slide immediately after it is in
+        // an non-null error state. If this is the case, this would result in a double free if
+        // tried to close it here also. For this reason, it is only closed if the slide is not in
+        // an error state.
+        if bindings::get_error(self.osr).is_none() {
+            bindings::close(self.osr);
+        }
     }
 }
 

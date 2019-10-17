@@ -141,3 +141,4 @@ pub mod bindings;
 mod convenience;
 pub mod predefined_properties;
 pub mod utils;
+mod error;

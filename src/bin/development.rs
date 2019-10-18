@@ -1,7 +1,6 @@
 //! Developement tests
 //!
 
-extern crate failure;
 extern crate image;
 extern crate openslide;
 #[macro_use]
@@ -10,9 +9,9 @@ extern crate clap;
 use std::fs;
 use std::path::Path;
 use std::ffi::OsStr;
+use std::error::Error;
 
 use clap::{App, Arg, ArgMatches};
-use failure::{format_err, Error};
 use openslide::OpenSlide;
 
 fn get_cli<'a>() -> ArgMatches<'a> {
@@ -99,7 +98,7 @@ fn write_region(
     target_height: i32,
     target_width: i32,
     zoom_factor: f32,
-) -> Result<(), Error> {
+) -> Result<(), Box<dyn Error>> {
     let zoom_lvl = os.get_best_level_for_downsample(zoom_factor as f64)?;
     println!("Max number of levels: {}", os.get_level_count()?);
     println!(
@@ -158,7 +157,7 @@ fn write_region(
     Ok(())
 }
 
-fn main() -> Result<(), Error> {
+fn main() -> Result<(), Box<dyn Error>> {
     let matches = get_cli();
 
     let input_file = match matches.value_of("input_file") {
@@ -167,7 +166,8 @@ fn main() -> Result<(), Error> {
             if filepath.exists() {
                 filepath
             } else {
-                return Err(format_err!("Input file does not exist"));
+                println!("Input file does not exist");
+                ::std::process::exit(1);
             }
         }
         None => unreachable!(),

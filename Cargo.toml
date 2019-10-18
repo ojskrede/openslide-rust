@@ -21,7 +21,6 @@ binaries = ["clap"]
 
 [dependencies]
 libc = "0.2"
-failure = "0.1"
 image = "0.20"
 num = "0.2"
 byteorder = "1.2"

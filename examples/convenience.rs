@@ -1,13 +1,12 @@
 //! Example of how to use the convenience functions
 //!
 
-extern crate failure;
 extern crate openslide;
 
-use failure::Error;
+use std::error::Error;
 use std::path::Path;
 
-fn basic_usage(filename: &Path) -> Result<(), Error> {
+fn basic_usage(filename: &Path) -> Result<(), Box<dyn Error>> {
     let os = openslide::OpenSlide::new(filename)?;
 
     println!("Num levels: {}", os.get_level_count()?);

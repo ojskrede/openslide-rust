@@ -136,6 +136,6 @@ pub use convenience::OpenSlide;
 
 pub mod bindings;
 mod convenience;
+mod error;
 pub mod predefined_properties;
 pub mod utils;
-mod error;

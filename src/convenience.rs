@@ -8,10 +8,10 @@ use std::fmt::{Debug, Display};
 use std::path::Path;
 
 use image::RgbaImage;
-use num::{Integer, Num, ToPrimitive, Unsigned, zero};
+use num::{zero, Integer, Num, ToPrimitive, Unsigned};
 
-use {bindings, predefined_properties::PredefinedProperties, utils};
 use crate::error::{Error, ErrorKind};
+use {bindings, predefined_properties::PredefinedProperties, utils};
 
 /// A convenient OpenSlide object with the ordinary OpenSlide functions as methods
 ///
@@ -62,12 +62,10 @@ impl OpenSlide {
         let num_levels = bindings::get_level_count(self.osr)?;
 
         if num_levels < 0 {
-            Err(Error::new(
-                ErrorKind::ReturnValue {
-                    from_function: "get_level_count".to_string(),
-                    message: format!("returned num_levels = {}", num_levels),
-                }
-            ))
+            Err(Error::new(ErrorKind::ReturnValue {
+                in_function: "get_level_count".to_string(),
+                message: format!("returned num_levels = {}", num_levels),
+            }))
         } else {
             Ok(num_levels as u32)
         }
@@ -82,21 +80,17 @@ impl OpenSlide {
         let (width, height) = bindings::get_level0_dimensions(self.osr)?;
 
         if width < 0 {
-            Err(Error::new(
-                ErrorKind::ReturnValue {
-                    from_function: "get_level0_dimensions".to_string(),
-                    message: format!("returned width = {}", width),
-                }
-            ))?
+            return Err(Error::new(ErrorKind::ReturnValue {
+                in_function: "get_level0_dimensions".to_string(),
+                message: format!("returned width = {}", width),
+            }));
         }
 
         if height < 0 {
-            Err(Error::new(
-                ErrorKind::ReturnValue {
-                    from_function: "get_level0_dimensions".to_string(),
-                    message: format!("returned height = {}", height),
-                }
-            ))?
+            return Err(Error::new(ErrorKind::ReturnValue {
+                in_function: "get_level0_dimensions".to_string(),
+                message: format!("returned height = {}", height),
+            }));
         }
 
         Ok((width as u64, height as u64))
@@ -106,80 +100,73 @@ impl OpenSlide {
     ///
     /// This method returns the (width, height) number of pixels of the whole slide image at the
     /// specified level. Returns an error if the level is invalid
-    pub fn get_level_dimensions<T: Integer + ToPrimitive + Debug + Display + Clone + Copy>(
-        &self,
-        level: T,
-    ) -> Result<(u64, u64), Error> {
+    pub fn get_level_dimensions<T>(&self, level: T) -> Result<(u64, u64), Error>
+    where
+        T: Integer + ToPrimitive + Debug + Display + Clone + Copy,
+    {
         self.assert_level_validity(level)?;
         let level = utils::to_i32(level)?;
 
         let (width, height) = bindings::get_level_dimensions(self.osr, level)?;
 
         if width < 0 {
-            Err(Error::new(
-                ErrorKind::ReturnValue {
-                    from_function: "get_level_dimensions".to_string(),
-                    message: format!("returned width = {}", width),
-                }
-            ))?
+            return Err(Error::new(ErrorKind::ReturnValue {
+                in_function: "get_level_dimensions".to_string(),
+                message: format!("returned width = {}", width),
+            }));
         }
 
         if height < 0 {
-            Err(Error::new(
-                ErrorKind::ReturnValue {
-                    from_function: "get_level_dimensions".to_string(),
-                    message: format!("returned height = {}", height),
-                }
-            ))?
+            return Err(Error::new(ErrorKind::ReturnValue {
+                in_function: "get_level_dimensions".to_string(),
+                message: format!("returned height = {}", height),
+            }));
         }
 
         Ok((width as u64, height as u64))
     }
 
     /// Get the downsampling factor of a given level.
-    pub fn get_level_downsample<T: Integer + ToPrimitive + Debug + Display + Clone + Copy>(
-        &self,
-        level: T,
-    ) -> Result<f64, Error> {
+    pub fn get_level_downsample<T>(&self, level: T) -> Result<f64, Error>
+    where
+        T: Integer + ToPrimitive + Debug + Display + Clone + Copy,
+    {
         self.assert_level_validity(level)?;
         let level = utils::to_i32(level)?;
         let downsample_factor = bindings::get_level_downsample(self.osr, level)?;
 
         if downsample_factor < 0.0 {
-            Err(Error::new(
-                ErrorKind::ReturnValue {
-                    from_function: "get_level_downsample".to_string(),
-                    message: format!("returned downsample_factor = {}", downsample_factor),
-                }
-            ))?
+            return Err(Error::new(ErrorKind::ReturnValue {
+                in_function: "get_level_downsample".to_string(),
+                message: format!("returned downsample_factor = {}", downsample_factor),
+            }));
         }
 
         Ok(downsample_factor)
     }
 
     /// Get the best level to use for displaying the given downsample factor.
-    pub fn get_best_level_for_downsample<
+    pub fn get_best_level_for_downsample<T>(&self, downsample_factor: T) -> Result<u32, Error>
+    where
         T: Num + ToPrimitive + PartialOrd + Debug + Display + Clone + Copy,
-    >(
-        &self,
-        downsample_factor: T,
-    ) -> Result<u32, Error> {
-
+    {
         if downsample_factor < zero() {
             return Err(Error::new(ErrorKind::OutOfBounds {
-                message: format!("Specified downsample factor is negative: {}", downsample_factor)
+                message: format!(
+                    "Specified downsample factor is negative: {}",
+                    downsample_factor
+                ),
             }));
         }
 
-        let level = bindings::get_best_level_for_downsample(self.osr, utils::to_f64(downsample_factor)?)?;
+        let level =
+            bindings::get_best_level_for_downsample(self.osr, utils::to_f64(downsample_factor)?)?;
 
         if level < 0 {
-            Err(Error::new(
-                ErrorKind::ReturnValue {
-                    from_function: "get_best_level_for_downsample".to_string(),
-                    message: format!("returned level = {}", level),
-                }
-            ))
+            Err(Error::new(ErrorKind::ReturnValue {
+                in_function: "get_best_level_for_downsample".to_string(),
+                message: format!("returned level = {}", level),
+            }))
         } else {
             Ok(level as u32)
         }
@@ -192,16 +179,17 @@ impl OpenSlide {
     ///
     /// and max_{height, width} are computed based on the top left corner coordinates and the
     /// dimensions of the image.
-    fn get_feasible_dimensions<
-        T: Integer + Unsigned + ToPrimitive + Debug + Display + Clone + Copy,
-    >(
+    fn get_feasible_dimensions<T>(
         &self,
         top_left_lvl0_row: T,
         top_left_lvl0_col: T,
         level: T,
         height: T,
         width: T,
-    ) -> Result<(u64, u64), Error> {
+    ) -> Result<(u64, u64), Error>
+    where
+        T: Integer + Unsigned + ToPrimitive + Debug + Display + Clone + Copy,
+    {
         let (max_width, max_height) = self.get_level_dimensions(level)?;
         let downsample_factor = self.get_level_downsample(level)?;
 
@@ -226,13 +214,13 @@ impl OpenSlide {
 
         if new_height > max_height {
             return Err(Error::new(ErrorKind::OutOfBounds {
-                message: format!("Requested height {} exceeds maximum {}", height, max_height)
+                message: format!("Requested height {} exceeds maximum {}", height, max_height),
             }));
         }
 
         if new_width > max_width {
             return Err(Error::new(ErrorKind::OutOfBounds {
-                message: format!("Requested width {} exceeds maximum {}", width, max_width)
+                message: format!("Requested width {} exceeds maximum {}", width, max_width),
             }));
         }
 
@@ -250,14 +238,17 @@ impl OpenSlide {
     ///     level: At which level to grab the region from
     ///     height: Height in pixels of the outputted region
     ///     width: Width in pixels of the outputted region
-    pub fn read_region<T: Integer + Unsigned + ToPrimitive + Debug + Display + Clone + Copy>(
+    pub fn read_region<T>(
         &self,
         top_left_lvl0_row: T,
         top_left_lvl0_col: T,
         level: T,
         height: T,
         width: T,
-    ) -> Result<RgbaImage, Error> {
+    ) -> Result<RgbaImage, Error>
+    where
+        T: Integer + Unsigned + ToPrimitive + Debug + Display + Clone + Copy,
+    {
         let (height, width) = self.get_feasible_dimensions(
             top_left_lvl0_row,
             top_left_lvl0_col,
@@ -297,7 +288,11 @@ impl OpenSlide {
         let level = utils::to_u32(level)?;
         if level >= max_num_levels {
             return Err(Error::new(ErrorKind::OutOfBounds {
-                message: format!("Specified level {} is larger than max slide level {}", level, max_num_levels - 1)
+                message: format!(
+                    "Specified level {} is larger than max slide level {}",
+                    level,
+                    max_num_levels - 1
+                ),
             }));
         }
         Ok(())

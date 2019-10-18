@@ -25,8 +25,8 @@
 extern crate openslide;
 
 use openslide::{bindings, utils};
-use std::path::Path;
 use std::error::Error;
+use std::path::Path;
 
 fn basic_usage(filename: &str) -> Result<(), Box<dyn Error>> {
     let vendor = bindings::detect_vendor(filename)?;

@@ -6,10 +6,10 @@ extern crate openslide;
 #[macro_use]
 extern crate clap;
 
+use std::error::Error;
+use std::ffi::OsStr;
 use std::fs;
 use std::path::Path;
-use std::ffi::OsStr;
-use std::error::Error;
 
 use clap::{App, Arg, ArgMatches};
 use openslide::OpenSlide;

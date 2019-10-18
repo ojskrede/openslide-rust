@@ -3,10 +3,11 @@
 use byteorder::ByteOrder;
 use image::{Rgba, RgbaImage};
 use num::{Integer, ToPrimitive, Unsigned};
+use std::f32;
 use std::fmt::{Debug, Display};
-use std::str;
-use std::path::Path;
 use std::io;
+use std::path::Path;
+use std::str;
 
 use crate::error::{Error, ErrorKind};
 
@@ -16,44 +17,57 @@ pub fn check_existence<T: Into<Vec<u8>>>(filepath: T) -> Result<(), Error> {
     let p_str = str::from_utf8(&p_bytes)?;
     let p = Path::new(&p_str);
     if !p.exists() {
-        return Err(Error::from(io::Error::new(io::ErrorKind::NotFound, format!("{}", p.display()))))
+        return Err(Error::from(io::Error::new(
+            io::ErrorKind::NotFound,
+            format!("{}", p.display()),
+        )));
     }
     Ok(())
 }
 
 /// Convenience conversion function that return result
 pub fn to_u32<T: ToPrimitive>(number: T) -> Result<u32, Error> {
-    number
-        .to_u32()
-        .ok_or(Error::new(ErrorKind::NumPrimitiveCast { message: "to u32".to_string() } ))
+    number.to_u32().ok_or_else(|| {
+        Error::new(ErrorKind::NumPrimitiveCast {
+            message: "to u32".to_string(),
+        })
+    })
 }
 
 /// Convenience conversion function that return result
 pub fn to_u64<T: ToPrimitive>(number: T) -> Result<u64, Error> {
-    number
-        .to_u64()
-        .ok_or(Error::new(ErrorKind::NumPrimitiveCast { message: "to u64".to_string() } ))
+    number.to_u64().ok_or_else(|| {
+        Error::new(ErrorKind::NumPrimitiveCast {
+            message: "to u64".to_string(),
+        })
+    })
 }
 
 /// Convenience conversion function that return result
 pub fn to_i32<T: ToPrimitive>(number: T) -> Result<i32, Error> {
-    number
-        .to_i32()
-        .ok_or(Error::new(ErrorKind::NumPrimitiveCast { message: "to i32".to_string() } ))
+    number.to_i32().ok_or_else(|| {
+        Error::new(ErrorKind::NumPrimitiveCast {
+            message: "to i32".to_string(),
+        })
+    })
 }
 
 /// Convenience conversion function that return result
 pub fn to_i64<T: ToPrimitive>(number: T) -> Result<i64, Error> {
-    number
-        .to_i64()
-        .ok_or(Error::new(ErrorKind::NumPrimitiveCast { message: "to i64".to_string() } ))
+    number.to_i64().ok_or_else(|| {
+        Error::new(ErrorKind::NumPrimitiveCast {
+            message: "to i64".to_string(),
+        })
+    })
 }
 
 /// Convenience conversion function that return result
 pub fn to_f64<T: ToPrimitive>(number: T) -> Result<f64, Error> {
-    number
-        .to_f64()
-        .ok_or(Error::new(ErrorKind::NumPrimitiveCast { message: "to f64".to_string() } ))
+    number.to_f64().ok_or_else(|| {
+        Error::new(ErrorKind::NumPrimitiveCast {
+            message: "to f64".to_string(),
+        })
+    })
 }
 
 /// A list of supported formats
@@ -129,17 +143,13 @@ pub enum WordRepresentation {
 /// This function takes a buffer, as the one obtained from openslide::read_region, and decodes into
 /// an Rgba image buffer.
 pub fn decode_buffer<T: Unsigned + Integer + ToPrimitive + Debug + Display + Clone + Copy>(
-    buffer: &Vec<u32>,
+    buffer: &[u32],
     height: T,
     width: T,
     word_representation: WordRepresentation,
 ) -> Result<RgbaImage, Error> {
-    let height = height
-        .to_u32()
-        .ok_or(Error::new(ErrorKind::NumPrimitiveCast { message: "to u32".to_string() } ))?;
-    let width = width
-        .to_u32()
-        .ok_or(Error::new(ErrorKind::NumPrimitiveCast { message: "to u32".to_string() } ))?;
+    let height = to_u32(height)?;
+    let width = to_u32(width)?;
     let mut rgba_image = RgbaImage::new(width, height);
 
     for (col, row, pixel) in rgba_image.enumerate_pixels_mut() {
@@ -154,15 +164,15 @@ pub fn decode_buffer<T: Unsigned + Integer + ToPrimitive + Debug + Display + Clo
         let [alpha, mut red, mut green, mut blue] = buf;
 
         if alpha != 0 && alpha != 255 {
-            red = (red as f32 * (255.0 / alpha as f32))
+            red = (f32::from(red) * (255.0 / f32::from(alpha)))
                 .round()
                 .max(0.0)
                 .min(255.0) as u8;
-            green = (green as f32 * (255.0 / alpha as f32))
+            green = (f32::from(green) * (255.0 / f32::from(alpha)))
                 .round()
                 .max(0.0)
                 .min(255.0) as u8;
-            blue = (blue as f32 * (255.0 / alpha as f32))
+            blue = (f32::from(blue) * (255.0 / f32::from(alpha)))
                 .round()
                 .max(0.0)
                 .min(255.0) as u8;

@@ -109,15 +109,9 @@ impl PredefinedProperties {
     /// This needs a property map in order to compute the number of levels. This is needed because
     /// of the properties that are listed as `openslide.level[<level>].<property>`.
     pub fn new(property_map: &HashMap<String, String>) -> Self {
-        let comment = property_map
-            .get("openslide.comment")
-            .map(|v| String::from(v));
-        let vendor = property_map
-            .get("openslide.vendor")
-            .map(|v| String::from(v));
-        let quickhash_1 = property_map
-            .get("openslide.quickhash-1")
-            .map(|v| String::from(v));
+        let comment = property_map.get("openslide.comment").map(String::from);
+        let vendor = property_map.get("openslide.vendor").map(String::from);
+        let quickhash_1 = property_map.get("openslide.quickhash-1").map(String::from);
         //FIXME let background_color = property_map.get("openslide.background-color").map(|v| String::from(v));
         let objective_power = match property_map.get("openslide.objective-power") {
             Some(v) => {
@@ -192,7 +186,7 @@ impl PredefinedProperties {
             if name.contains("openslide.level[") {
                 let level = {
                     let starts_with_number = name.split("level[").last().unwrap();
-                    let number_as_string = starts_with_number.split("]").nth(0).unwrap();
+                    let number_as_string = starts_with_number.split(']').nth(0).unwrap();
                     u32::from_str_radix(number_as_string, 10).unwrap() as usize
                 };
                 match levels {
@@ -335,13 +329,12 @@ impl PredefinedProperties {
 /// Find the max level from the `openslide.level[<level>].<level-property>` properties.
 fn find_max_level(property_map: &HashMap<String, String>) -> Option<u32> {
     let mut found_levels = Vec::<u32>::new();
-    for (key, _) in property_map {
+    for key in property_map.keys() {
         if key.contains("openslide.level[") {
             let starts_with_number = key.split("openslide.level[").last().unwrap();
-            let number_as_string = starts_with_number.split("]").nth(0).unwrap();
-            match u32::from_str_radix(number_as_string, 10) {
-                Ok(val) => found_levels.push(val),
-                Err(_) => {}
+            let number_as_string = starts_with_number.split(']').nth(0).unwrap();
+            if let Ok(val) = u32::from_str_radix(number_as_string, 10) {
+                found_levels.push(val)
             }
         }
     }

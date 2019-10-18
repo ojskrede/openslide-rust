@@ -4,20 +4,18 @@
 ///
 /// (https://docs.rs/csv/1.1.1/csv/struct.Error.html)[https://docs.rs/csv/1.1.1/csv/struct.Error.html]
 ///
-
-use std::{str, fmt, error, ffi, io};
+use std::{error, ffi, fmt, io, str};
 
 /// The specific error type
 #[derive(Debug)]
 pub enum ErrorKind {
-
     /// Error from the original library.
     ///
     /// Whenever operations are done on the underlying openslide object, its error status is
     /// checked. If it is non-null, the underlying openslide object is closed, and the message is
     /// reported via this error kind.
     NonNullErrorState {
-        from_function: String,
+        in_function: String,
         message: String,
     },
 
@@ -26,19 +24,15 @@ pub enum ErrorKind {
     /// Functions that are expected to return a value will instead return an error value if
     /// something goes wrong. This error covers these cases
     ReturnValue {
-        from_function: String,
+        in_function: String,
         message: String,
     },
 
     /// Error when converting to and from number types
-    NumPrimitiveCast {
-        message: String,
-    },
+    NumPrimitiveCast { message: String },
 
     /// Errors for values that are out of bounds
-    OutOfBounds {
-        message: String,
-    },
+    OutOfBounds { message: String },
 
     /// Catches std::ffi::NulError from calling std::ffi::CString::new()
     Nul(ffi::NulError),
@@ -58,23 +52,27 @@ pub enum ErrorKind {
 impl ErrorKind {
     /// Gives the name of the function in the original implementation if the error originates
     /// there.
-    pub fn from_function(&self) -> Option<String> {
+    pub fn in_function(&self) -> Option<String> {
         match *self {
-            ErrorKind::NonNullErrorState { ref from_function, .. } => Some(from_function.clone()),
-            ErrorKind::ReturnValue { ref from_function, .. } => Some(from_function.clone()),
-            _ => None
+            ErrorKind::NonNullErrorState {
+                ref in_function, ..
+            } => Some(in_function.clone()),
+            ErrorKind::ReturnValue {
+                ref in_function, ..
+            } => Some(in_function.clone()),
+            _ => None,
         }
     }
-    
+
     /// Gives the error message from the error in the original implementation if the error
     /// originates there.
     pub fn message(&self) -> Option<String> {
         match *self {
-            ErrorKind::NonNullErrorState { from_function: _, ref message } => Some(message.clone()),
-            ErrorKind::ReturnValue { from_function: _, ref message } => Some(message.clone()),
+            ErrorKind::NonNullErrorState { ref message, .. } => Some(message.clone()),
+            ErrorKind::ReturnValue { ref message, .. } => Some(message.clone()),
             ErrorKind::NumPrimitiveCast { ref message } => Some(message.clone()),
             ErrorKind::OutOfBounds { ref message } => Some(message.clone()),
-            _ => None
+            _ => None,
         }
     }
 }
@@ -86,7 +84,9 @@ pub struct Error {
 
 impl Error {
     pub(crate) fn new(kind: ErrorKind) -> Self {
-        Error { kind: Box::new(kind) }
+        Error {
+            kind: Box::new(kind),
+        }
     }
 
     pub fn kind(&self) -> &ErrorKind {
@@ -97,8 +97,8 @@ impl Error {
         *self.kind
     }
 
-    pub fn from_function(&self) -> Option<String> {
-        self.kind.from_function()
+    pub fn in_function(&self) -> Option<String> {
+        self.kind.in_function()
     }
 
     pub fn message(&self) -> Option<String> {
@@ -109,37 +109,33 @@ impl Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self.kind {
-            ErrorKind::NonNullErrorState { ref from_function, ref message } => {
-                write!(
-                    f,
-                    "ERROR: The slide object was in a non-null error state and has been closed.\n\
-                    In function {} from the original C library: {}",
-                    from_function.clone(),
-                    message.clone(),
-                )
-            },
-            ErrorKind::ReturnValue { ref from_function, ref message } => {
-                write!(
-                    f,
-                    "ERROR: Returned error value in function {} from the original C library: {}",
-                    from_function.clone(),
-                    message.clone(),
-                )
-            },
-            ErrorKind::NumPrimitiveCast { ref message } => {
-                write!(
-                    f,
-                    "ERROR: Converting between number types: {}",
-                    message.clone(),
-                )
-            },
+            ErrorKind::NonNullErrorState {
+                ref in_function,
+                ref message,
+            } => write!(
+                f,
+                "ERROR: The slide object was in a non-null error state and has been closed.\n\
+                 In function {} from the original C library: {}",
+                in_function.clone(),
+                message.clone(),
+            ),
+            ErrorKind::ReturnValue {
+                ref in_function,
+                ref message,
+            } => write!(
+                f,
+                "ERROR: Returned error value in function {} from the original C library: {}",
+                in_function.clone(),
+                message.clone(),
+            ),
+            ErrorKind::NumPrimitiveCast { ref message } => write!(
+                f,
+                "ERROR: Converting between number types: {}",
+                message.clone(),
+            ),
             ErrorKind::OutOfBounds { ref message } => {
-                write!(
-                    f,
-                    "ERROR: Value is out of bounds: {}",
-                    message.clone(),
-                )
-            },
+                write!(f, "ERROR: Value is out of bounds: {}", message.clone(),)
+            }
             ErrorKind::Nul(ref err) => err.fmt(f), // TODO: If only used for CString::new(), specialise it
             ErrorKind::Io(ref err) => err.fmt(f),
             ErrorKind::Utf8(ref err) => err.fmt(f),

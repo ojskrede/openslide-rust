@@ -51,11 +51,7 @@ impl OpenSlide {
             ));
         }
 
-        let osr = bindings::open(
-            filename
-                .to_str()
-                .ok_or(format_err!("Error: Path to &str"))?,
-        )?;
+        let osr = bindings::open(filename.to_string_lossy().as_bytes())?;
 
         let mut property_map = HashMap::<String, String>::new();
         for name in bindings::get_property_names(osr)? {

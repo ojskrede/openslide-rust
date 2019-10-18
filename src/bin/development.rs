@@ -9,6 +9,7 @@ extern crate clap;
 
 use std::fs;
 use std::path::Path;
+use std::ffi::OsStr;
 
 use clap::{App, Arg, ArgMatches};
 use failure::{format_err, Error};
@@ -90,7 +91,7 @@ fn get_cli<'a>() -> ArgMatches<'a> {
 }
 
 fn write_region(
-    fname: &str,
+    fname: Option<&OsStr>,
     os: &OpenSlide,
     out_dir: &Path,
     source_row: u32,
@@ -147,7 +148,10 @@ fn write_region(
                                  target_width,
                                  zoom_lvl))
     */
-    let out_fname = out_dir.join(format!("{}.png", fname));
+    let out_fname = match fname {
+        Some(name) => out_dir.join(format!("{}.png", name.to_string_lossy())),
+        None => out_dir.join("wsi_crop.png"),
+    };
 
     im.save(&out_fname)?;
 
@@ -220,7 +224,7 @@ fn main() -> Result<(), Error> {
     }
 
     write_region(
-        &input_file.file_stem().unwrap().to_str().unwrap(),
+        input_file.file_stem(),
         &os,
         &out_dir,
         source_row,

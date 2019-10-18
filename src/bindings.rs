@@ -119,7 +119,7 @@ pub fn detect_vendor(filename: &str) -> Result<String, Error> {
 }
 
 /// Open a whole slide image.
-pub fn open(filename: &str) -> Result<*const OpenSlideType, Error> {
+pub fn open<T: Into<Vec<u8>>>(filename: T) -> Result<*const OpenSlideType, Error> {
     let c_filename = ffi::CString::new(filename)?;
     let osr = unsafe { openslide_open(c_filename.as_ptr()) };
     if let Some(err) = get_error(osr) {

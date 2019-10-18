@@ -1,7 +1,6 @@
 //! Integration tests of the convenience module
 //!
 
-extern crate failure;
 extern crate float_cmp;
 extern crate image;
 extern crate openslide;

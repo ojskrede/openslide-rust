@@ -6,7 +6,8 @@
 //! For a more rust convenient api, use the OpenSlide struct.
 //!
 
-use failure::{format_err, Error};
+use crate::error::{Error, ErrorKind};
+use crate::utils;
 use libc;
 use std::{self, ffi, str};
 
@@ -110,6 +111,7 @@ extern "C" {
 
 /// Quickly determine whether a whole slide image is recognized.
 pub fn detect_vendor(filename: &str) -> Result<String, Error> {
+    utils::check_existence(filename)?;
     let c_filename = ffi::CString::new(filename)?;
     let vendor = unsafe {
         let c_vendor = openslide_detect_vendor(c_filename.as_ptr());
@@ -120,14 +122,15 @@ pub fn detect_vendor(filename: &str) -> Result<String, Error> {
 
 /// Open a whole slide image.
 pub fn open(filename: &str) -> Result<*const OpenSlideType, Error> {
+    utils::check_existence(filename)?;
     let c_filename = ffi::CString::new(filename)?;
     let osr = unsafe { openslide_open(c_filename.as_ptr()) };
     if let Some(err) = get_error(osr) {
         close(osr);
-        return Err(format_err!(
-            "In function open: Non-NULL error state from openslide:\n\n{}\n\n",
-            err
-        ));
+        return Err(Error::new(ErrorKind::NonNullErrorState {
+            in_function: "open".to_string(),
+            message: err,
+        }));
     }
     Ok(osr)
 }
@@ -144,10 +147,10 @@ pub fn get_level_count(osr: *const OpenSlideType) -> Result<i32, Error> {
     let num_levels = unsafe { openslide_get_level_count(osr) };
     if let Some(err) = get_error(osr) {
         close(osr);
-        return Err(format_err!(
-            "In function get_level_count: Non-NULL error state from openslide:\n\n{}\n\n",
-            err
-        ));
+        return Err(Error::new(ErrorKind::NonNullErrorState {
+            in_function: "get_level_count".to_string(),
+            message: err,
+        }));
     }
     Ok(num_levels)
 }
@@ -161,10 +164,10 @@ pub fn get_level0_dimensions(osr: *const OpenSlideType) -> Result<(i64, i64), Er
     }
     if let Some(err) = get_error(osr) {
         close(osr);
-        return Err(format_err!(
-            "In function get_level0_dimensions: Non-NULL error state from openslide:\n\n{}\n\n",
-            err
-        ));
+        return Err(Error::new(ErrorKind::NonNullErrorState {
+            in_function: "get_level0_dimensions".to_string(),
+            message: err,
+        }));
     }
     Ok((width, height))
 }
@@ -178,10 +181,10 @@ pub fn get_level_dimensions(osr: *const OpenSlideType, level: i32) -> Result<(i6
     }
     if let Some(err) = get_error(osr) {
         close(osr);
-        return Err(format_err!(
-            "In function get_level_dimensions: Non-NULL error state from openslide:\n\n{}\n\n",
-            err
-        ));
+        return Err(Error::new(ErrorKind::NonNullErrorState {
+            in_function: "get_level_dimensions".to_string(),
+            message: err,
+        }));
     }
     Ok((width, height))
 }
@@ -191,10 +194,10 @@ pub fn get_level_downsample(osr: *const OpenSlideType, level: i32) -> Result<f64
     let downsampling_factor = unsafe { openslide_get_level_downsample(osr, level) };
     if let Some(err) = get_error(osr) {
         close(osr);
-        return Err(format_err!(
-            "In function get_level_downsample: Non-NULL error state from openslide:\n\n{}\n\n",
-            err
-        ));
+        return Err(Error::new(ErrorKind::NonNullErrorState {
+            in_function: "get_level_downsample".to_string(),
+            message: err,
+        }));
     }
     Ok(downsampling_factor)
 }
@@ -207,10 +210,10 @@ pub fn get_best_level_for_downsample(
     let level = unsafe { openslide_get_best_level_for_downsample(osr, downsample) };
     if let Some(err) = get_error(osr) {
         close(osr);
-        return Err(format_err!(
-            "In function get_best_level_for_downsample: Non-NULL error state from openslide:\n\n{}\n\n",
-            err
-        ));
+        return Err(Error::new(ErrorKind::NonNullErrorState {
+            in_function: "get_best_level_for_downsample".to_string(),
+            message: err,
+        }));
     }
     Ok(level)
 }
@@ -231,10 +234,10 @@ pub fn read_region(
     }
     if let Some(err) = get_error(osr) {
         close(osr);
-        return Err(format_err!(
-            "In function read_region: Non-NULL error state from openslide:\n\n{}\n\n",
-            err
-        ));
+        return Err(Error::new(ErrorKind::NonNullErrorState {
+            in_function: "read_region".to_string(),
+            message: err,
+        }));
     }
     unsafe {
         buffer.set_len((h * w) as usize);
@@ -253,7 +256,11 @@ pub fn get_error(osr: *const OpenSlideType) -> Option<String> {
     unsafe {
         let error_state = openslide_get_error(osr);
         if !error_state.is_null() {
-            return_val = Some(ffi::CStr::from_ptr(error_state).to_string_lossy().into_owned());
+            return_val = Some(
+                ffi::CStr::from_ptr(error_state)
+                    .to_string_lossy()
+                    .into_owned(),
+            );
         }
     }
     return_val
@@ -269,10 +276,10 @@ pub fn get_property_names(osr: *const OpenSlideType) -> Result<Vec<String>, Erro
         let null_terminated_array_ptr = unsafe { openslide_get_property_names(osr) };
         if let Some(err) = get_error(osr) {
             close(osr);
-            return Err(format_err!(
-                "In function get_property_names: Non-NULL error state from openslide:\n\n{}\n\n",
-                err
-            ));
+            return Err(Error::new(ErrorKind::NonNullErrorState {
+                in_function: "get_property_names".to_string(),
+                message: err,
+            }));
         }
         let mut counter = 0;
         let mut loc = null_terminated_array_ptr;
@@ -306,10 +313,10 @@ pub fn get_property_value(osr: *const OpenSlideType, name: &str) -> Result<Strin
     };
     if let Some(err) = get_error(osr) {
         close(osr);
-        return Err(format_err!(
-            "In function get_property_value: Non-NULL error state from openslide:\n\n{}\n\n",
-            err
-        ));
+        return Err(Error::new(ErrorKind::NonNullErrorState {
+            in_function: "get_property_value".to_string(),
+            message: err,
+        }));
     }
     Ok(value)
 }

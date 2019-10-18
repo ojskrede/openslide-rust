@@ -64,13 +64,12 @@
 //! ```rust,no_run
 //! //! Example using the raw binding api
 //!
-//! extern crate failure;
 //! extern crate openslide;
 //!
-//! use failure::Error;
 //! use openslide::bindings;
+//! use std::error::Error;
 //!
-//! fn main() -> Result<(), Error> {
+//! fn main() -> Result<(), Box<dyn Error>> {
 //!     let filename = "assets/CMU-1-Small-Region.svs";
 //!     let osr = bindings::open(filename)?;
 //!     let num_levels = bindings::get_level_count(osr)?;
@@ -94,14 +93,13 @@
 //! ```rust,no_run
 //! //! Example using the convenience binding api
 //!
-//! extern crate failure;
 //! extern crate openslide;
 //!
 //! use std::path::Path;
-//! use failure::Error;
+//! use std::error::Error;
 //! use openslide::OpenSlide;
 //!
-//! fn main() -> Result<(), Error> {
+//! fn main() -> Result<(), Box<dyn Error>> {
 //!     let filename = Path::new("assets/CMU-1-Small-Region.svs");
 //!     let os = openslide::OpenSlide::new(&filename)?;
 //!     let num_levels = os.get_level_count()?;
@@ -113,7 +111,6 @@
 //!
 
 extern crate byteorder;
-extern crate failure;
 extern crate image;
 extern crate libc;
 extern crate num;
@@ -139,5 +136,6 @@ pub use convenience::OpenSlide;
 
 pub mod bindings;
 mod convenience;
+mod error;
 pub mod predefined_properties;
 pub mod utils;

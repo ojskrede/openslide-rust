@@ -22,6 +22,9 @@ factor -> best level -> factor for level
 
 ## [0.3.0] -
 
+### Added
+  - Custom error handling
+  - Function to check error state on openslide object
 ### Fixed
   - A bug introduced when adhering to clippy caused no properties to be parsed. This is fixed.
 ### Removed
@@ -31,6 +34,7 @@ factor -> best level -> factor for level
     the ones the c api of openslide provides
     (https://openslide.org/api/openslide_8h.html). Vendor specific properties are still
     available in a dictionary.
+  - failure error handling dependency
 
 ## [0.2.0] - 2018.11.19
 ### Added

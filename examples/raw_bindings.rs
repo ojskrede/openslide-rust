@@ -22,14 +22,13 @@
 //!    already been freed (and then not free it again when calling Drop), or only drop it if an
 //!    error did not occur.
 
-extern crate failure;
 extern crate openslide;
 
-use failure::Error;
 use openslide::{bindings, utils};
+use std::error::Error;
 use std::path::Path;
 
-fn basic_usage(filename: &str) -> Result<(), Error> {
+fn basic_usage(filename: &str) -> Result<(), Box<dyn Error>> {
     let vendor = bindings::detect_vendor(filename)?;
     println!("Vendor: {}", vendor);
 
@@ -81,7 +80,7 @@ fn basic_usage(filename: &str) -> Result<(), Error> {
     Ok(())
 }
 
-fn properties(filename: &str) -> Result<(), Error> {
+fn properties(filename: &str) -> Result<(), Box<dyn Error>> {
     let osr = bindings::open(filename)?;
 
     println!("Slide in {} has the following properties:", filename);

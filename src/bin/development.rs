@@ -1,17 +1,17 @@
 //! Developement tests
 //!
 
-extern crate failure;
 extern crate image;
 extern crate openslide;
 #[macro_use]
 extern crate clap;
 
+use std::error::Error;
+use std::ffi::OsStr;
 use std::fs;
 use std::path::Path;
 
 use clap::{App, Arg, ArgMatches};
-use failure::{format_err, Error};
 use openslide::OpenSlide;
 
 fn get_cli<'a>() -> ArgMatches<'a> {
@@ -90,7 +90,7 @@ fn get_cli<'a>() -> ArgMatches<'a> {
 }
 
 fn write_region(
-    fname: &str,
+    fname: Option<&OsStr>,
     os: &OpenSlide,
     out_dir: &Path,
     source_row: u32,
@@ -98,7 +98,7 @@ fn write_region(
     target_height: i32,
     target_width: i32,
     zoom_factor: f32,
-) -> Result<(), Error> {
+) -> Result<(), Box<dyn Error>> {
     let zoom_lvl = os.get_best_level_for_downsample(zoom_factor as f64)?;
     println!("Max number of levels: {}", os.get_level_count()?);
     println!(
@@ -147,14 +147,17 @@ fn write_region(
                                  target_width,
                                  zoom_lvl))
     */
-    let out_fname = out_dir.join(format!("{}.png", fname));
+    let out_fname = match fname {
+        Some(name) => out_dir.join(format!("{}.png", name.to_string_lossy())),
+        None => out_dir.join("wsi_crop.png"),
+    };
 
     im.save(&out_fname)?;
 
     Ok(())
 }
 
-fn main() -> Result<(), Error> {
+fn main() -> Result<(), Box<dyn Error>> {
     let matches = get_cli();
 
     let input_file = match matches.value_of("input_file") {
@@ -163,7 +166,8 @@ fn main() -> Result<(), Error> {
             if filepath.exists() {
                 filepath
             } else {
-                return Err(format_err!("Input file does not exist"));
+                println!("Input file does not exist");
+                ::std::process::exit(1);
             }
         }
         None => unreachable!(),
@@ -220,7 +224,7 @@ fn main() -> Result<(), Error> {
     }
 
     write_region(
-        &input_file.file_stem().unwrap().to_str().unwrap(),
+        input_file.file_stem(),
         &os,
         &out_dir,
         source_row,

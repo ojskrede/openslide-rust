@@ -5,7 +5,7 @@
 /// (https://docs.rs/csv/1.1.1/csv/struct.Error.html)[https://docs.rs/csv/1.1.1/csv/struct.Error.html]
 ///
 
-use std::{fmt, error, ffi};
+use std::{str, fmt, error, ffi, io};
 
 /// The specific error type
 #[derive(Debug)]
@@ -21,14 +21,33 @@ pub enum ErrorKind {
         message: String,
     },
 
-    /// Catch-all error from the original C library not covered by ErrorKind::NonNullErrorState
-    Original {
+    /// Error from the original library.
+    ///
+    /// Functions that are expected to return a value will instead return an error value if
+    /// something goes wrong. This error covers these cases
+    ReturnValue {
         from_function: String,
+        message: String,
+    },
+
+    /// Error when converting to and from number types
+    NumPrimitiveCast {
+        message: String,
+    },
+
+    /// Errors for values that are out of bounds
+    OutOfBounds {
         message: String,
     },
 
     /// Catches std::ffi::NulError from calling std::ffi::CString::new()
     Nul(ffi::NulError),
+
+    /// Errors regarding I/O, also including file not found for the input slide path.
+    Io(io::Error),
+
+    /// Errors regarding utf8 strings
+    Utf8(str::Utf8Error),
 
     /// Make sure clients do not rely on exhaustive matching as this library can add other error
     /// kinds in the future.
@@ -42,7 +61,7 @@ impl ErrorKind {
     pub fn from_function(&self) -> Option<String> {
         match *self {
             ErrorKind::NonNullErrorState { ref from_function, .. } => Some(from_function.clone()),
-            ErrorKind::Original { ref from_function, .. } => Some(from_function.clone()),
+            ErrorKind::ReturnValue { ref from_function, .. } => Some(from_function.clone()),
             _ => None
         }
     }
@@ -52,7 +71,9 @@ impl ErrorKind {
     pub fn message(&self) -> Option<String> {
         match *self {
             ErrorKind::NonNullErrorState { from_function: _, ref message } => Some(message.clone()),
-            ErrorKind::Original { from_function: _, ref message } => Some(message.clone()),
+            ErrorKind::ReturnValue { from_function: _, ref message } => Some(message.clone()),
+            ErrorKind::NumPrimitiveCast { ref message } => Some(message.clone()),
+            ErrorKind::OutOfBounds { ref message } => Some(message.clone()),
             _ => None
         }
     }
@@ -97,15 +118,31 @@ impl fmt::Display for Error {
                     message.clone(),
                 )
             },
-            ErrorKind::Original { ref from_function, ref message } => {
+            ErrorKind::ReturnValue { ref from_function, ref message } => {
                 write!(
                     f,
-                    "ERROR: General error in function {} from the original C library: {}",
+                    "ERROR: Returned error value in function {} from the original C library: {}",
                     from_function.clone(),
                     message.clone(),
                 )
             },
-            ErrorKind::Nul(ref err) => err.fmt(f),
+            ErrorKind::NumPrimitiveCast { ref message } => {
+                write!(
+                    f,
+                    "ERROR: Converting between number types: {}",
+                    message.clone(),
+                )
+            },
+            ErrorKind::OutOfBounds { ref message } => {
+                write!(
+                    f,
+                    "ERROR: Value is out of bounds: {}",
+                    message.clone(),
+                )
+            },
+            ErrorKind::Nul(ref err) => err.fmt(f), // TODO: If only used for CString::new(), specialise it
+            ErrorKind::Io(ref err) => err.fmt(f),
+            ErrorKind::Utf8(ref err) => err.fmt(f),
             _ => unreachable!(),
         }
     }
@@ -117,12 +154,34 @@ impl From<ffi::NulError> for Error {
     }
 }
 
+impl From<io::Error> for Error {
+    fn from(err: io::Error) -> Error {
+        Error::new(ErrorKind::Io(err))
+    }
+}
+
+impl From<str::Utf8Error> for Error {
+    fn from(err: str::Utf8Error) -> Error {
+        Error::new(ErrorKind::Utf8(err))
+    }
+}
+
+impl From<Error> for io::Error {
+    fn from(err: Error) -> io::Error {
+        io::Error::new(io::ErrorKind::Other, err)
+    }
+}
+
 impl error::Error for Error {
     fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         match *self.kind {
             ErrorKind::NonNullErrorState { .. } => None,
-            ErrorKind::Original { .. } => None,
+            ErrorKind::ReturnValue { .. } => None,
             ErrorKind::Nul(ref err) => Some(err),
+            ErrorKind::Io(ref err) => Some(err),
+            ErrorKind::Utf8(ref err) => Some(err),
+            ErrorKind::NumPrimitiveCast { .. } => None,
+            ErrorKind::OutOfBounds { .. } => None,
             _ => unreachable!(),
         }
     }

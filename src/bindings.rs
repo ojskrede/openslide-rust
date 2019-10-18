@@ -9,6 +9,7 @@
 use libc;
 use std::{self, ffi, str};
 use crate::error::{Error, ErrorKind};
+use crate::utils;
 
 /// Dummy type for the opaque struct openslide_t type in OpenSlide. See
 ///
@@ -110,6 +111,7 @@ extern "C" {
 
 /// Quickly determine whether a whole slide image is recognized.
 pub fn detect_vendor(filename: &str) -> Result<String, Error> {
+    utils::check_existence(filename)?;
     let c_filename = ffi::CString::new(filename)?;
     let vendor = unsafe {
         let c_vendor = openslide_detect_vendor(c_filename.as_ptr());
@@ -119,7 +121,8 @@ pub fn detect_vendor(filename: &str) -> Result<String, Error> {
 }
 
 /// Open a whole slide image.
-pub fn open<T: Into<Vec<u8>>>(filename: T) -> Result<*const OpenSlideType, Error> {
+pub fn open(filename: &str) -> Result<*const OpenSlideType, Error> {
+    utils::check_existence(filename)?;
     let c_filename = ffi::CString::new(filename)?;
     let osr = unsafe { openslide_open(c_filename.as_ptr()) };
     if let Some(err) = get_error(osr) {

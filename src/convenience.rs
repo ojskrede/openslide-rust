@@ -7,12 +7,11 @@ use std::collections::HashMap;
 use std::fmt::{Debug, Display};
 use std::path::Path;
 
-use failure::{format_err, Error};
 use image::RgbaImage;
-use num::zero;
-use num::{Integer, Num, ToPrimitive, Unsigned};
+use num::{Integer, Num, ToPrimitive, Unsigned, zero};
 
 use {bindings, predefined_properties::PredefinedProperties, utils};
+use crate::error::{Error, ErrorKind};
 
 /// A convenient OpenSlide object with the ordinary OpenSlide functions as methods
 ///
@@ -44,14 +43,7 @@ impl OpenSlide {
     /// should not create a new object on every tile request. Instead, it should maintain a cache
     /// of OpenSlide objects and reuse them when possible.
     pub fn new(filename: &Path) -> Result<OpenSlide, Error> {
-        if !filename.exists() {
-            return Err(format_err!(
-                "Error: Nonexisting path: {}",
-                filename.display()
-            ));
-        }
-
-        let osr = bindings::open(filename.to_string_lossy().as_bytes())?;
+        let osr = bindings::open(&filename.as_os_str().to_string_lossy())?;
 
         let mut property_map = HashMap::<String, String>::new();
         for name in bindings::get_property_names(osr)? {
@@ -69,18 +61,12 @@ impl OpenSlide {
     pub fn get_level_count(&self) -> Result<u32, Error> {
         let num_levels = bindings::get_level_count(self.osr)?;
 
-        if num_levels < -1 {
-            Err(format_err!(
-                "Error: Number of levels is {}, this is an unknown error from OpenSlide. \
-                 OpenSlide returns -1 if an error occured. \
-                 See OpenSlide C API documentation.",
-                num_levels
-            ))
-        } else if num_levels == -1 {
-            Err(format_err!(
-                "Error: Number of levels is -1, this is a known error from OpenSlide. \
-                 OpenSlide returns -1 if an error occured. \
-                 See OpenSlide C API documentation.",
+        if num_levels < 0 {
+            Err(Error::new(
+                ErrorKind::ReturnValue {
+                    from_function: "get_level_count".to_string(),
+                    message: format!("returned num_levels = {}", num_levels),
+                }
             ))
         } else {
             Ok(num_levels as u32)
@@ -95,34 +81,22 @@ impl OpenSlide {
     pub fn get_level0_dimensions(&self) -> Result<(u64, u64), Error> {
         let (width, height) = bindings::get_level0_dimensions(self.osr)?;
 
-        if width < -1 {
-            return Err(format_err!(
-                "Error: Width is {}, this is an unknown error from OpenSlide. \
-                 OpenSlide returns -1 if an error occured. \
-                 See OpenSlide C API documentation.",
-                width
-            ));
-        } else if width == -1 {
-            return Err(format_err!(
-                "Error: Width is -1, this is a known error from OpenSlide. \
-                 OpenSlide returns -1 if an error occured. \
-                 See OpenSlide C API documentation.",
-            ));
+        if width < 0 {
+            Err(Error::new(
+                ErrorKind::ReturnValue {
+                    from_function: "get_level0_dimensions".to_string(),
+                    message: format!("returned width = {}", width),
+                }
+            ))?
         }
 
-        if height < -1 {
-            return Err(format_err!(
-                "Error: Height is {}, this is an unknown error from OpenSlide. \
-                 OpenSlide returns -1 if an error occured. \
-                 See OpenSlide C API documentation.",
-                width
-            ));
-        } else if height == -1 {
-            return Err(format_err!(
-                "Error: Height is -1, this is a known error from OpenSlide. \
-                 OpenSlide returns -1 if an error occured. \
-                 See OpenSlide C API documentation.",
-            ));
+        if height < 0 {
+            Err(Error::new(
+                ErrorKind::ReturnValue {
+                    from_function: "get_level0_dimensions".to_string(),
+                    message: format!("returned height = {}", height),
+                }
+            ))?
         }
 
         Ok((width as u64, height as u64))
@@ -137,40 +111,26 @@ impl OpenSlide {
         level: T,
     ) -> Result<(u64, u64), Error> {
         self.assert_level_validity(level)?;
-        let level = level
-            .to_i32()
-            .ok_or(format_err!("Conversion to primitive error"))?;
+        let level = utils::to_i32(level)?;
 
         let (width, height) = bindings::get_level_dimensions(self.osr, level)?;
 
-        if width < -1 {
-            return Err(format_err!(
-                "Error: Width is {}, this is an unknown error from OpenSlide. \
-                 OpenSlide returns -1 if an error occured. \
-                 See OpenSlide C API documentation.",
-                width
-            ));
-        } else if width == -1 {
-            return Err(format_err!(
-                "Error: Width is -1, this is a known error from openslide. \
-                 OpenSlide returns -1 if an error occured. \
-                 See OpenSlide C API documentation.",
-            ));
+        if width < 0 {
+            Err(Error::new(
+                ErrorKind::ReturnValue {
+                    from_function: "get_level_dimensions".to_string(),
+                    message: format!("returned width = {}", width),
+                }
+            ))?
         }
 
-        if height < -1 {
-            return Err(format_err!(
-                "Error: Height is {}, this is an unknown error from OpenSlide. \
-                 OpenSlide returns -1 if an error occured. \
-                 See OpenSlide C API documentation.",
-                width
-            ));
-        } else if height == -1 {
-            return Err(format_err!(
-                "Error: Height is -1, this is a known error from openslide. \
-                 OpenSlide returns -1 if an error occured. \
-                 See OpenSlide C API documentation.",
-            ));
+        if height < 0 {
+            Err(Error::new(
+                ErrorKind::ReturnValue {
+                    from_function: "get_level_dimensions".to_string(),
+                    message: format!("returned height = {}", height),
+                }
+            ))?
         }
 
         Ok((width as u64, height as u64))
@@ -182,20 +142,16 @@ impl OpenSlide {
         level: T,
     ) -> Result<f64, Error> {
         self.assert_level_validity(level)?;
-        let level = level
-            .to_i32()
-            .ok_or(format_err!("Conversion to primitive error"))?;
+        let level = utils::to_i32(level)?;
         let downsample_factor = bindings::get_level_downsample(self.osr, level)?;
 
         if downsample_factor < 0.0 {
-            return Err(format_err!(
-                "Error: When trying to get a downsample factor for level {},\
-                 OpenSlide returned a downsample factor {}, this is an error from \
-                 OpenSlide. OpenSlide returns -1.0 if an error occured. \
-                 See OpenSlide C API documentation.",
-                level,
-                downsample_factor
-            ));
+            Err(Error::new(
+                ErrorKind::ReturnValue {
+                    from_function: "get_level_downsample".to_string(),
+                    message: format!("returned downsample_factor = {}", downsample_factor),
+                }
+            ))?
         }
 
         Ok(downsample_factor)
@@ -208,33 +164,21 @@ impl OpenSlide {
         &self,
         downsample_factor: T,
     ) -> Result<u32, Error> {
+
         if downsample_factor < zero() {
-            return Err(format_err!(
-                "Error: Only non-negative downsample factor is allowed. \
-                 You specified {}. ",
-                downsample_factor
-            ));
+            return Err(Error::new(ErrorKind::OutOfBounds {
+                message: format!("Specified downsample factor is negative: {}", downsample_factor)
+            }));
         }
 
-        let level = bindings::get_best_level_for_downsample(
-            self.osr,
-            downsample_factor
-                .to_f64()
-                .ok_or(format_err!("Conversion to primitive error"))?,
-        )?;
+        let level = bindings::get_best_level_for_downsample(self.osr, utils::to_f64(downsample_factor)?)?;
 
-        if level < -1 {
-            Err(format_err!(
-                "Error: Returned level is {}, this is an unknown error from OpenSlide. \
-                 OpenSlide returns -1 if an error occured. \
-                 See OpenSlide C API documentation.",
-                level
-            ))
-        } else if level == -1 {
-            Err(format_err!(
-                "Error: Returned level is -1, this is a known error from openslide. \
-                 OpenSlide returns -1 if an error occured. \
-                 See OpenSlide C API documentation.",
+        if level < 0 {
+            Err(Error::new(
+                ErrorKind::ReturnValue {
+                    from_function: "get_best_level_for_downsample".to_string(),
+                    message: format!("returned level = {}", level),
+                }
             ))
         } else {
             Ok(level as u32)
@@ -261,39 +205,19 @@ impl OpenSlide {
         let (max_width, max_height) = self.get_level_dimensions(level)?;
         let downsample_factor = self.get_level_downsample(level)?;
 
-        let tl_row_this_lvl = top_left_lvl0_row
-            .to_f64()
-            .ok_or(format_err!("Conversion to primitive error"))?
-            / downsample_factor;
-        let tl_col_this_lvl = top_left_lvl0_col
-            .to_f64()
-            .ok_or(format_err!("Conversion to primitive error"))?
-            / downsample_factor;
+        let tl_row_this_lvl = utils::to_f64(top_left_lvl0_row)? / downsample_factor;
+        let tl_col_this_lvl = utils::to_f64(top_left_lvl0_col)? / downsample_factor;
 
-        let new_height = height
-            .to_u64()
-            .ok_or(format_err!("Conversion to primitive error"))?
-            .min(max_height - tl_row_this_lvl.round() as u64);
-        let new_width = width
-            .to_u64()
-            .ok_or(format_err!("Conversion to primitive error"))?
-            .min(max_width - tl_col_this_lvl.round() as u64);
+        let new_height = utils::to_u64(height)?.min(max_height - tl_row_this_lvl.round() as u64);
+        let new_width = utils::to_u64(width)?.min(max_width - tl_col_this_lvl.round() as u64);
 
-        if new_height
-            < height
-                .to_u64()
-                .ok_or(format_err!("Conversion to primitive error"))?
-        {
+        if new_height < utils::to_u64(height)? {
             println!(
                 "WARNING: Requested region height is changed from {} to {} in order to fit",
                 height, new_height
             );
         }
-        if new_width
-            < width
-                .to_u64()
-                .ok_or(format_err!("conversion to primitive error"))?
-        {
+        if new_width < utils::to_u64(width)? {
             println!(
                 "WARNING: Requested region width is changed from {} to {} in order to fit",
                 width, new_width
@@ -301,19 +225,15 @@ impl OpenSlide {
         }
 
         if new_height > max_height {
-            return Err(format_err!(
-                "Requested height {} exceeds maximum {}",
-                height,
-                max_height
-            ));
+            return Err(Error::new(ErrorKind::OutOfBounds {
+                message: format!("Requested height {} exceeds maximum {}", height, max_height)
+            }));
         }
 
         if new_width > max_width {
-            return Err(format_err!(
-                "Requested width {} exceeds maximum {}",
-                width,
-                max_width
-            ));
+            return Err(Error::new(ErrorKind::OutOfBounds {
+                message: format!("Requested width {} exceeds maximum {}", width, max_width)
+            }));
         }
 
         Ok((new_height, new_width))
@@ -348,21 +268,11 @@ impl OpenSlide {
 
         let buffer = bindings::read_region(
             self.osr,
-            top_left_lvl0_col
-                .to_i64()
-                .ok_or(format_err!("Conversion to primitive error"))?,
-            top_left_lvl0_row
-                .to_i64()
-                .ok_or(format_err!("Conversion to primitive error"))?,
-            level
-                .to_i32()
-                .ok_or(format_err!("Conversion to primitive error"))?,
-            width
-                .to_i64()
-                .ok_or(format_err!("Conversion to primitive error"))?,
-            height
-                .to_i64()
-                .ok_or(format_err!("Conversion to primitive error"))?,
+            utils::to_i64(top_left_lvl0_col)?,
+            utils::to_i64(top_left_lvl0_row)?,
+            utils::to_i32(level)?,
+            utils::to_i64(width)?,
+            utils::to_i64(height)?,
         )?;
         let word_repr = utils::WordRepresentation::BigEndian;
         utils::decode_buffer(&buffer, height, width, word_repr)
@@ -384,15 +294,11 @@ impl OpenSlide {
     /// Check if the given level is valid
     fn assert_level_validity<T: Integer + ToPrimitive>(&self, level: T) -> Result<(), Error> {
         let max_num_levels = self.get_level_count()?;
-        let level = level
-            .to_u32()
-            .ok_or(format_err!("Conversion to primitive error"))?;
+        let level = utils::to_u32(level)?;
         if level >= max_num_levels {
-            return Err(format_err!(
-                "Error: Specified level {} is larger than the max slide level {}",
-                level,
-                max_num_levels - 1,
-            ));
+            return Err(Error::new(ErrorKind::OutOfBounds {
+                message: format!("Specified level {} is larger than max slide level {}", level, max_num_levels - 1)
+            }));
         }
         Ok(())
     }

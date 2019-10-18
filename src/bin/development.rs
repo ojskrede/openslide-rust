@@ -12,7 +12,7 @@ use std::fs;
 use std::path::Path;
 
 use clap::{App, Arg, ArgMatches};
-use openslide::OpenSlide;
+use openslide::{detect_vendor, OpenSlide};
 
 fn get_cli<'a>() -> ArgMatches<'a> {
     let matches = App::new("Analyse wsi")
@@ -199,6 +199,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             val
         }
     };
+
+    println!("Vendor: {:?}", detect_vendor(input_file));
 
     let os = OpenSlide::new(input_file)?;
 

@@ -25,6 +25,7 @@ factor -> best level -> factor for level
 ### Added
   - Custom error handling
   - Function to check error state on openslide object
+  - `detect_vendor` function to convenience
 ### Fixed
   - A bug introduced when adhering to clippy caused no properties to be parsed. This is fixed.
 ### Removed

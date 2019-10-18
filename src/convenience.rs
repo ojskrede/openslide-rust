@@ -13,6 +13,11 @@ use num::{zero, Integer, Num, ToPrimitive, Unsigned};
 use crate::error::{Error, ErrorKind};
 use {bindings, predefined_properties::PredefinedProperties, utils};
 
+/// Quickly determine whether a whole slide image is recognized.
+pub fn detect_vendor(filename: &Path) -> Result<String, Error> {
+    bindings::detect_vendor(&filename.as_os_str().to_string_lossy())
+}
+
 /// A convenient OpenSlide object with the ordinary OpenSlide functions as methods
 ///
 /// This wraps the bindings found in the bindings module, but has a more (in my opinion) convenient

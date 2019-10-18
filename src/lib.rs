@@ -132,7 +132,7 @@ pub use bindings::{OpenSlideT,
 };
 */
 
-pub use convenience::OpenSlide;
+pub use convenience::{detect_vendor, OpenSlide};
 
 pub mod bindings;
 mod convenience;

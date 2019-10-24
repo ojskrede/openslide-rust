@@ -4,8 +4,10 @@
 
 use std::cmp::PartialOrd;
 use std::collections::HashMap;
+use std::ffi::OsStr;
 use std::fmt::{Debug, Display};
-use std::path::Path;
+use std::fs;
+use std::path::{Path, PathBuf};
 
 use image::RgbaImage;
 use num::{zero, Integer, Num, ToPrimitive, Unsigned};
@@ -26,6 +28,7 @@ pub fn detect_vendor(filename: &Path) -> Result<String, Error> {
 pub struct OpenSlide {
     osr: *const bindings::OpenSlideType,
     pub predefined_properties: PredefinedProperties,
+    filename: PathBuf,
 }
 
 impl Drop for OpenSlide {
@@ -59,6 +62,7 @@ impl OpenSlide {
         Ok(OpenSlide {
             osr,
             predefined_properties,
+            filename: filename.to_path_buf(),
         })
     }
 
@@ -243,6 +247,19 @@ impl OpenSlide {
     ///     level: At which level to grab the region from
     ///     height: Height in pixels of the outputted region
     ///     width: Width in pixels of the outputted region
+    ///
+    /// NOTE: There is a bug in openslide when trying to read some large slides. Issues on github
+    /// related to this are e.g. [#174](https://github.com/openslide/openslide/issues/174) and
+    /// [#212](https://github.com/openslide/openslide/issues/212).
+    ///
+    /// Error message example:
+    ///
+    /// ```shell,no-run
+    /// Not a JPEG file: starts with 0xff 0x11
+    /// ```
+    ///
+    /// Until this is fixed, this function will print a warning when trying to open a `.svs` or `.ndpi`
+    /// file > 4GB, just to give the user a hint of what might be wrong.
     pub fn read_region<T>(
         &self,
         top_left_lvl0_row: T,
@@ -254,6 +271,19 @@ impl OpenSlide {
     where
         T: Integer + Unsigned + ToPrimitive + Debug + Display + Clone + Copy,
     {
+        let file_attr = fs::metadata(&self.filename)?;
+        if file_attr.len() > 4 * 1024 * 1024 * 1024 {
+            if let Some(ext) = self.filename.extension() {
+                if [OsStr::new("svs"), OsStr::new("ndpi")].contains(&ext) {
+                    println!(
+                        "WARNING: Trying to read a region from a {} file larger than 4 GiB, which
+                        \rcan cause problems related to issue #174 or #212 described in the openslide github
+                        \rrepository. If no error is produced, it is still adviced to inspect the result.",
+                        ext.to_string_lossy(),
+                        )
+                }
+            }
+        }
         let (height, width) = self.get_feasible_dimensions(
             top_left_lvl0_row,
             top_left_lvl0_col,
